@@ -25,6 +25,7 @@ dates = pd.date_range(start='1927-06', end=today_date, freq='MS').strftime('%Y-%
 initial_amount = 1
 
 # Inflation data
+# TODO: relative file paths
 pd.set_option('future.no_silent_downcasting', True)
 inflation_filepath = r"C:\Users\Adrian(SatovskyAsset\Desktop\Projects\IFA\SeriesReport-20240610103427_33cb36.xlsx"
 datasets = {}

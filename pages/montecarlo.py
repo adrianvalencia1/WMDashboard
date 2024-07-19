@@ -549,6 +549,13 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, avg_inp
                 portfolio_values[simulation][year+1] = (portfolio_values[simulation][year]) * (1 + returns[year])
                 portfolio_values_clone[simulation][year+1] = (portfolio_values_clone[simulation][year]) * (1 + returns[year])
 
+                withdrawal = 0
+                contribution = 0
+                contribution_start = 0
+                contribution_end = 0 
+                withdrawal_start = 0
+                withdrawal_end = 0
+
                 for input_group in cw_children[1:]: # looping across inputgroups
                     if hasattr(input_group, 'get'):
                         for input_group_attribute in input_group.get('props').items(): # looping through inputgroups' inputs
@@ -557,21 +564,29 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, avg_inp
                                     if 'id' in item.get('props'):
                                         if item.get('props').get('id').get('type') == 'monte-carlo-contribution-start':
                                             contribution_start = item.get('props').get('value')
+                                            if contribution_start is None:
+                                                contribution_start = 0
                                         if item.get('props').get('id').get('type') == 'monte-carlo-contribution-end':
                                             contribution_end = item.get('props').get('value')
+                                            if contribution_end is None:
+                                                contribution_end = 0
                                         if item.get('props').get('id').get('type') == 'monte-carlo-contribution-input':
                                             contribution = item.get('props').get('value')
                                         if item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-start':
                                             withdrawal_start = item.get('props').get('value')
+                                            if withdrawal_start is None:
+                                                withdrawal_start = 0
                                         if item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-end':
                                             withdrawal_end = item.get('props').get('value')
+                                            if withdrawal_end is None:
+                                                withdrawal_end = 0
                                         if item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-input':
                                             withdrawal = item.get('props').get('value')
-
-                if contribution_start-1 <= year <= contribution_end-1:
-                    portfolio_values[simulation][year+1] += contribution
-                if withdrawal_start-1 <= year <= withdrawal_end-1:
-                    portfolio_values[simulation][year+1] -= withdrawal
+                            
+                            if contribution_start-1 <= year <= contribution_end-1:
+                                portfolio_values[simulation][year+1] += contribution
+                            if withdrawal_start-1 <= year <= withdrawal_end-1:
+                                portfolio_values[simulation][year+1] -= withdrawal
 
                 if portfolio_values[simulation][year+1] < 0:
                     portfolio_values[simulation][year+1] = 0.0000001
