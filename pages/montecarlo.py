@@ -16,6 +16,19 @@ import cwutil as cw
 MAX_SIMULATIONS = 100000
 MAX_TIME_PERIODS = 100
 
+dropdown_menu_avg_return = [
+    dbc.DropdownMenuItem("Input", id={'type':'dropdown-menu-avg-return-input','index':1}),
+    dbc.DropdownMenuItem(divider=True),
+    dbc.DropdownMenuItem("S&P 500 (10y)", id={'type':'dropdown-menu-avg-return-sp500','index':1}),
+    dbc.DropdownMenuItem("DJIA (34y)", id={'type':'dropdown-menu-avg-return-djia','index':1}),
+]
+dropdown_menu_std_dev = [
+    dbc.DropdownMenuItem("Input", id={'type':'dropdown-menu-std-dev-input','index':1}),
+    dbc.DropdownMenuItem(divider=True),
+    dbc.DropdownMenuItem("S&P 500 (10y)", id={'type':'dropdown-menu-std-dev-sp500','index':1}),
+    dbc.DropdownMenuItem("DJIA (34y)", id={'type':'dropdown-menu-std-dev-djia','index':1})
+]
+
 
 register_page(
     __name__,
@@ -26,19 +39,7 @@ register_page(
 
 def layout():
 
-    dropdown_menu_avg_return = [
-        dbc.DropdownMenuItem("Input", id="dropdown-menu-avg-return-input"),
-        dbc.DropdownMenuItem(divider=True),
-        dbc.DropdownMenuItem("S&P 500 (10y)", id="dropdown-menu-avg-return-sp500"),
-        dbc.DropdownMenuItem("DJIA (34y)", id="dropdown-menu-avg-return-djia")
-    ]
-
-    dropdown_menu_std_dev = [
-        dbc.DropdownMenuItem("Input", id="dropdown-menu-std-dev-input"),
-        dbc.DropdownMenuItem(divider=True),
-        dbc.DropdownMenuItem("S&P 500 (10y)", id="dropdown-menu-std-dev-sp500"),
-        dbc.DropdownMenuItem("DJIA (34y)", id="dropdown-menu-std-dev-djia")
-    ]
+    
     dbc.Tooltip(
         "The average return of an initial investment.",
         target="monte-carlo-average-return",
@@ -84,34 +85,55 @@ def layout():
                         dbc.Tooltip(
                             "Initial investment in $.",
                             target="initial-investment",
-                            placement="bottom"
+                            placement="top"
                         ),
 
-                        # AVERAGE RETURN
-                        dbc.InputGroup([
-                            dbc.InputGroupText("Average Return"), 
-                            dbc.DropdownMenu(dropdown_menu_avg_return, color="secondary"),
-                            dbc.Input(
-                                id='monte-carlo-average-return',
-                                value=10,
-                                type='number',
-                                placeholder="Enter Average Return"
-                            ),
-                            dbc.InputGroupText("%"),
-                        ]),
-                        
-                        # STANDARD DEVIATION
-                        dbc.InputGroup([
-                            dbc.InputGroupText("Standard Deviation"), 
-                            dbc.DropdownMenu(dropdown_menu_std_dev, color="secondary"),
-                            dbc.Input(
-                                id='monte-carlo-standard-deviation',
-                                value=15,
-                                type='number',
-                                placeholder="Enter Standard Deviation"
-                            ),
-                            dbc.InputGroupText("%"),
-                        ]),
+                        # AVERAGE RETURN / STANDARD DEVIATION
+                        html.Div(id='monte-carlo-arstd-container', children=[
+                            html.Div([
+                                dbc.Button(
+                                    "Add Asset",
+                                    id='monte-carlo-add-arstd',
+                                    n_clicks=0
+                                ),
+                            ]),
+                            dbc.InputGroup([
+                                dbc.InputGroupText("Average Return"), 
+                                dbc.DropdownMenu(dropdown_menu_avg_return, color="secondary"),
+                                dbc.Input(
+                                    id={'type':'monte-carlo-average-return', 'index':1},
+                                    value=10,
+                                    type='number',
+                                    required=True,
+                                    placeholder="Enter Average Return"
+                                ),
+                                dbc.InputGroupText("%"),
+                                dbc.InputGroupText(" "), # Gap
+                                dbc.InputGroupText("Standard Deviation"), 
+                                dbc.DropdownMenu(dropdown_menu_std_dev, color="secondary"),
+                                dbc.Input(
+                                    id={'type':'monte-carlo-standard-deviation', 'index':1},
+                                    value=15,
+                                    type='number',
+                                    required=True,
+                                    placeholder="Enter Standard Deviation"
+                                ),
+                                dbc.InputGroupText("%"),
+                                dbc.InputGroupText(" "), # Gap
+                                dbc.InputGroupText("Ratio"), 
+                                dbc.Input(
+                                    id={'type':'monte-carlo-ratio', 'index':1},
+                                    value=100,
+                                    min=0,
+                                    max=100,
+                                    type='number',
+                                    required=True,
+                                    placeholder="Enter Ratio"
+                                ),
+                                dbc.InputGroupText("%"),
+                            ])
+                            ]
+                        ),
                         dbc.Tooltip(
                             "Determines by how much returns can deviate from the average. A higher standard deviation means more volatility and risk.",
                             target="monte-carlo-standard-deviation",
@@ -297,7 +319,7 @@ def layout():
             id='monte-carlo-button', 
             n_clicks=0,
             color="secondary",
-            disabled=True
+            disabled=False
         ),
         ], style={'display':'flex', 'gap':'1vh', 'flex-direction':'column'}),
         
@@ -328,6 +350,29 @@ def layout():
 
     ])
     return layout
+
+#################################
+# ASSETS (AVG. RETURN / STDDEV) #
+#################################
+
+# add asset button
+@callback(
+    Output('monte-carlo-arstd-container', 'children'),
+    Input('monte-carlo-add-arstd', 'n_clicks'),
+    State('monte-carlo-arstd-container', 'children')
+)
+def update_cw_container(arstd_clicks, children):
+    if arstd_clicks == 0:
+        raise PreventUpdate
+    
+    num_children = len(children) # used to name the ids
+    inputgroup = []
+
+    if 'monte-carlo-add-arstd' == ctx.triggered_id:
+        inputgroup = cw.create_asset_source(num_children)
+    children += [inputgroup]
+        
+    return children
 
 ###############################
 # CONTRIBUTIONS / WITHDRAWALS #
@@ -366,32 +411,7 @@ def update_cw_container(nc, nw, time_periods, children):
                                     item.get('props')['max'] = time_periods
         
     return children
-"""
-# Set the max for contribution year range
-@callback(
-    [Output('monte-carlo-contribution-start', 'max'),
-     Output('monte-carlo-contribution-start', 'invalid'),
-     Output('monte-carlo-contribution-end', 'min'),
-     Output('monte-carlo-contribution-end', 'max'),
-     Output('monte-carlo-contribution-end', 'invalid')],
-    [Input('monte-carlo-time-periods', 'value'),
-     Input('monte-carlo-contribution-start', 'value'),
-     Input('monte-carlo-contribution-end', 'value')]
-)
-def max_years(years, input_years_start, input_years_end):
-    if years is None or input_years_start is None or input_years_end is None:
-        raise PreventUpdate
     
-    invalid_start = False
-    invalid_end = False
-    if input_years_start > years:
-        invalid_start = True
-        invalid_end = True
-    if input_years_start > input_years_end:
-        invalid_end = True
-    return years, invalid_start, input_years_start, years, invalid_end"""
-    
-
 # Switch time period between months and years
 @callback(
     Output("monte-carlo-time-periods", "max"),
@@ -402,7 +422,7 @@ def update_time_periods(time_interval):
         return MAX_TIME_PERIODS * 12
     elif time_interval == "y":
         return MAX_TIME_PERIODS
-
+"""
 # disable run simulation button
 @callback(
     Output("monte-carlo-button", "disabled"),
@@ -459,7 +479,7 @@ def avg_return_dropdown(n1, n2, n3):
         return 13.05
     elif button_id == "dropdown-menu-avg-return-djia":
         return 10.79
-    
+    """
 # Paragraph explaining the results of the graph
 @callback(
     [Output('monte-carlo-graph-info-header', 'children'),
@@ -488,8 +508,7 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Input('monte-carlo-time-periods', 'value'),
      Input('monte-carlo-button', 'n_clicks'),
      Input('initial-investment', 'value'),
-     Input('monte-carlo-average-return', 'value'),
-     Input('monte-carlo-standard-deviation', 'value'),
+     Input('monte-carlo-arstd-container', 'children'),
      Input('monte-carlo-threshold', 'value'),
      Input('monte-carlo-threshold-type', 'value'),
      Input('monte-carlo-cw-container', 'children'),
@@ -497,7 +516,7 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Input('monte-carlo-time-interval', 'value')],
     
 )
-def update_monte_carlo(simulations, years, n_clicks, initial_investment, avg_input, stddev_input, threshold_input, threshold_type, cw_children, threshold_direction, time_interval):
+def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_children, threshold_input, threshold_type, cw_children, threshold_direction, time_interval):
     # prevent updates for null inputs
     #if not contribution_start:
     #    contribution_start = 0
@@ -518,9 +537,13 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, avg_inp
     if n_clicks is None:
         n_clicks = 0
     if n_clicks != 0:
+        
+        avg_temp, standard_deviation_temp = u.get_arstd_children(arstd_children)
 
-        avg = avg_input/100
-        standard_deviation = stddev_input/100
+        avg = avg_temp/100
+        print(avg)
+        standard_deviation = standard_deviation_temp/100
+        print(standard_deviation)
 
         if time_interval == "m":
             current_year = datetime.now()
@@ -583,10 +606,11 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, avg_inp
                                         if item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-input':
                                             withdrawal = item.get('props').get('value')
                             
-                            if contribution_start-1 <= year <= contribution_end-1:
-                                portfolio_values[simulation][year+1] += contribution
-                            if withdrawal_start-1 <= year <= withdrawal_end-1:
-                                portfolio_values[simulation][year+1] -= withdrawal
+                if contribution_start-1 <= year <= contribution_end-1:
+                    portfolio_values[simulation][year+1] += contribution
+                    print(f"Year:{year} | Contribution:{contribution}")
+                if withdrawal_start-1 <= year <= withdrawal_end-1:
+                    portfolio_values[simulation][year+1] -= withdrawal
 
                 if portfolio_values[simulation][year+1] < 0:
                     portfolio_values[simulation][year+1] = 0.0000001

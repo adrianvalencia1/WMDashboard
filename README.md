@@ -68,13 +68,7 @@ WMDashboard/
 - `pages/`: Contains layout and callback definitions for the Dash application.
 
 ## Dependencies
-The project relies on the following Python packages:
-
-- dash
-- pandas
-- plotly
-
-These dependencies are listed in the `requirements.txt` file. You can install them using the command:
+Dependencies are listed in the `requirements.txt` file. You can install them using the command:
 ```sh
 pip install -r requirements.txt
 ```

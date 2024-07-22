@@ -1,4 +1,5 @@
 import colorsys
+import math
 import numpy as np
 import yfinance as yf
 from datetime import datetime, timedelta
@@ -350,3 +351,51 @@ def get_dividends_percent_weighted(ticker_obj, start_date, end_date, weight=1):
     hst['yield'] = hst['Dividends'] / hst['Close']
     #return hst['yield'].tolist() * weight
     return [item * weight for item in hst['yield'].tolist()]
+
+def normalize_to_percentage(arr):
+    total = np.sum(arr)
+    if total == 0:
+        return np.zeros_like(arr)  # To handle cases where the sum is zero
+    percentage_arr = (arr / total) * 100
+    return percentage_arr
+
+def weighted_average(values, weights):
+    if len(values) != len(weights):
+        raise ValueError("The length of values and weights must be the same")
+    total_weight = sum(weights)
+    if total_weight == 0:
+        raise ValueError("The sum of weights must not be zero")
+    weighted_sum = sum(v * w for v, w in zip(values, weights))
+    return weighted_sum / total_weight
+
+def get_arstd_children(children):
+
+    ratios = []
+    avg_returns = []
+    std_devs = []
+
+    for input_group in children[1:]:
+        if hasattr(input_group, 'get'):
+            for input_group_attribute in input_group.get('props').items(): # looping through inputgroups' inputs
+                if input_group_attribute[0] == 'children':
+                    for item in input_group_attribute[1]:
+                        if 'id' in item.get('props'):
+                            if item.get('props').get('id').get('type') == 'monte-carlo-ratio':
+                                ratios.append(item.get('props').get('value'))
+                            if item.get('props').get('id').get('type') == 'monte-carlo-average-return':
+                                avg_returns.append(item.get('props').get('value'))
+                            if item.get('props').get('id').get('type') == 'monte-carlo-standard-deviation':
+                                std_devs.append(item.get('props').get('value'))
+    
+    ratios_norm = normalize_to_percentage(ratios)
+
+    #df = pd.DataFrame({
+    #    'Average Return':avg_returns,
+    #    'Standard Deviation':std_devs,
+    #    'Ratio': ratios_norm
+    #})
+
+    weighted_average_average_returns = weighted_average(avg_returns, ratios_norm)
+    weighted_average_standard_deviations = math.sqrt(weighted_average(np.array(std_devs)*np.array(std_devs), ratios_norm))
+
+    return weighted_average_average_returns, weighted_average_standard_deviations
