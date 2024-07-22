@@ -1,7 +1,7 @@
 from datetime import datetime
 import math
 import time
-import util as u
+import util.util as u
 from dash import dcc, html, dash_table, ctx, callback, register_page
 import numpy as np
 from dash.dependencies import Input, Output, State
@@ -10,7 +10,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from dash.exceptions import PreventUpdate
 from dateutil.relativedelta import relativedelta
-import cwutil as cw
+import util.cwutil as cw
 
 
 MAX_SIMULATIONS = 100000

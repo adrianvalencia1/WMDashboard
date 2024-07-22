@@ -1,9 +1,9 @@
-from util import *
+from util.util import *
 from dateutil.parser import parse
 from plotly.subplots import make_subplots
 import plotly.express as px
 import plotly.graph_objects as go
-import inflation as i
+import util.inflation as i
 
 updatemenus = [
     dict(

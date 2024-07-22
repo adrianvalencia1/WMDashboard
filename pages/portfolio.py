@@ -3,7 +3,7 @@ import dash
 from dash import Dash, dcc, html, ctx
 import numpy as np
 import plotly.express as px
-import portfoliographs as g
+import util.portfoliographs as g
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
 import pandas as pd
@@ -11,9 +11,9 @@ from datetime import datetime
 import dash_bootstrap_components as dbc
 import copy
 from dash.exceptions import PreventUpdate
-import inflation as i
-from util import create_ticker_obj, get_dividends_percent_weighted, get_weights_monthly_returns, read_all_tickers
-import util as u
+import util.inflation as i
+from util.util import create_ticker_obj, get_dividends_percent_weighted, get_weights_monthly_returns, read_all_tickers
+import util.util as u
 from dash import dcc, html, dash_table, ctx, callback, register_page
 
 pd.options.mode.chained_assignment = None
