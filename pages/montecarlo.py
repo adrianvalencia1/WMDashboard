@@ -68,7 +68,7 @@ def layout():
             html.Div([
                 dbc.Card(
                     dbc.CardBody([
-                        html.H5(['Portfolio']),
+                        html.H4(['Portfolio']),
 
                         # INITIAL INVESTMENT
                         dbc.InputGroup([
@@ -89,72 +89,88 @@ def layout():
                         ),
 
                         # AVERAGE RETURN / STANDARD DEVIATION
-                        html.Div(id='monte-carlo-arstd-container', children=[
-                            html.Div([
-                                dbc.Button(
-                                    "Add Asset",
-                                    id='monte-carlo-add-arstd',
-                                    n_clicks=0
+                        dbc.Card(
+                            dbc.CardBody([
+                                html.H5(['Assets']),
+                                html.Div(
+                                    id='monte-carlo-arstd-container', 
+                                    children=[
+                                        html.Div([
+                                            dbc.Button(
+                                                "Add Asset",
+                                                id='monte-carlo-add-arstd',
+                                                n_clicks=0,
+                                                color='secondary'
+                                            ),
+                                        ], style={'display':'flex', 'gap':'1vh'}),
+                                        dbc.InputGroup([
+                                            dbc.InputGroupText("Average Return"), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-average-return', 'index':1},
+                                                value=10,
+                                                type='number',
+                                                required=True,
+                                                placeholder="Enter Average Return"
+                                            ),
+                                            dbc.InputGroupText("%"),
+                                            dbc.InputGroupText(" "), # Gap
+                                            dbc.InputGroupText("Standard Deviation"), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-standard-deviation', 'index':1},
+                                                value=15,
+                                                type='number',
+                                                required=True,
+                                                placeholder="Enter Standard Deviation"
+                                            ),
+                                            dbc.InputGroupText("%"),
+                                            dbc.InputGroupText(" "), # Gap
+                                            dbc.InputGroupText("Ratio"), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-ratio', 'index':1},
+                                                value=100,
+                                                min=0,
+                                                max=100,
+                                                type='number',
+                                                required=True,
+                                                placeholder="Enter Ratio"
+                                            ),
+                                            dbc.InputGroupText("%"),
+                                        ])
+                                    ], 
+                                    style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
                                 ),
-                            ]),
-                            dbc.InputGroup([
-                                dbc.InputGroupText("Average Return"), 
-                                dbc.DropdownMenu(dropdown_menu_avg_return, color="secondary"),
-                                dbc.Input(
-                                    id={'type':'monte-carlo-average-return', 'index':1},
-                                    value=10,
-                                    type='number',
-                                    required=True,
-                                    placeholder="Enter Average Return"
-                                ),
-                                dbc.InputGroupText("%"),
-                                dbc.InputGroupText(" "), # Gap
-                                dbc.InputGroupText("Standard Deviation"), 
-                                dbc.DropdownMenu(dropdown_menu_std_dev, color="secondary"),
-                                dbc.Input(
-                                    id={'type':'monte-carlo-standard-deviation', 'index':1},
-                                    value=15,
-                                    type='number',
-                                    required=True,
-                                    placeholder="Enter Standard Deviation"
-                                ),
-                                dbc.InputGroupText("%"),
-                                dbc.InputGroupText(" "), # Gap
-                                dbc.InputGroupText("Ratio"), 
-                                dbc.Input(
-                                    id={'type':'monte-carlo-ratio', 'index':1},
-                                    value=100,
-                                    min=0,
-                                    max=100,
-                                    type='number',
-                                    required=True,
-                                    placeholder="Enter Ratio"
-                                ),
-                                dbc.InputGroupText("%"),
                             ])
-                            ]
                         ),
+                        
                         dbc.Tooltip(
                             "Determines by how much returns can deviate from the average. A higher standard deviation means more volatility and risk.",
                             target="monte-carlo-standard-deviation",
                             placement="top"
                         ),
                         
-                        html.Div(id='monte-carlo-cw-container', children=[
-                            html.Div([
-                                dbc.Button(
-                                    "Add Contributions",
-                                    id='monte-carlo-add-c',
-                                    n_clicks=0
-                                ),
-                                dbc.Button(
-                                    "Add Withdrawals",
-                                    id='monte-carlo-add-w',
-                                    n_clicks=0
-                                ),
-                            ]),
-                            # CONTRIBUTION
-                            dbc.InputGroup(
+                        # CONTRIBUTION AND WITHDRAWAL
+                        dbc.Card(
+                            dbc.CardBody([
+                                html.H5(['Contributions and Withdrawals']),
+                                html.Div(
+                                    id='monte-carlo-cw-container', 
+                                    children=[
+                                        html.Div([
+                                            dbc.Button(
+                                                "Add Contribution Source",
+                                                id='monte-carlo-add-c',
+                                                n_clicks=0,
+                                                color='secondary'
+                                            ),
+                                            dbc.Button(
+                                                "Add Withdrawal Source",
+                                                id='monte-carlo-add-w',
+                                                n_clicks=0,
+                                                color='secondary'
+                                            ),
+                                        ], style={'display':'flex', 'gap':'1vh'}),
+                                        # CONTRIBUTION
+                                        dbc.InputGroup(
                                 id={'type':'monte-carlo-contribution-igcontainer', 'index': 1},
                                 children=[ # Contribution inputs
                                 dbc.InputGroupText("Contribution"),
@@ -185,8 +201,8 @@ def layout():
                                     placeholder="End Interval"
                                 )]
                             ),
-                            # WITHDRAWAL
-                            dbc.InputGroup(
+                                        # WITHDRAWAL
+                                        dbc.InputGroup(
                                 id={'type':'monte-carlo-withdrawal-igcontainer', 'index':2},
                                 children=[ # Withdrawal inputs
                                 dbc.InputGroupText("Withdrawal"),
@@ -217,7 +233,11 @@ def layout():
                                     placeholder="End Interval"
                                 )
                             ])
-                        ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}),
+                                    ], 
+                                    style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
+                                ),
+                            ])
+                        ),
                     ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}),
                 ),
             ], style={'max-width':'none'}),
@@ -226,7 +246,7 @@ def layout():
             html.Div([
                 dbc.Card(
                     dbc.CardBody([
-                        html.H5(['Simulation'],),
+                        html.H4(['Simulation'],),
                         dbc.InputGroup([
                             dbc.Select(
                                 options=[
@@ -282,7 +302,7 @@ def layout():
             html.Div([
                 dbc.Card(
                     dbc.CardBody([
-                        html.H5(['Threshold'],),
+                        html.H4(['Threshold'],),
                         
                         dbc.InputGroup([
                             dbc.Select(
@@ -541,9 +561,7 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_c
         avg_temp, standard_deviation_temp = u.get_arstd_children(arstd_children)
 
         avg = avg_temp/100
-        print(avg)
         standard_deviation = standard_deviation_temp/100
-        print(standard_deviation)
 
         if time_interval == "m":
             current_year = datetime.now()
@@ -608,7 +626,7 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_c
                             
                 if contribution_start-1 <= year <= contribution_end-1:
                     portfolio_values[simulation][year+1] += contribution
-                    print(f"Year:{year} | Contribution:{contribution}")
+
                 if withdrawal_start-1 <= year <= withdrawal_end-1:
                     portfolio_values[simulation][year+1] -= withdrawal
 

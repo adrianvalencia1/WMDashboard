@@ -2,23 +2,8 @@ import dash_bootstrap_components as dbc
 
 def create_asset_source(arstd_id):
 
-    dropdown_menu_avg_return = [
-    dbc.DropdownMenuItem("Input", id={'type':'dropdown-menu-avg-return-input','index':arstd_id}),
-    dbc.DropdownMenuItem(divider=True),
-    dbc.DropdownMenuItem("S&P 500 (10y)", id={'type':'dropdown-menu-avg-return-sp500','index':arstd_id}),
-    dbc.DropdownMenuItem("DJIA (34y)", id={'type':'dropdown-menu-avg-return-djia','index':arstd_id}),
-    ]
-    dropdown_menu_std_dev = [
-        dbc.DropdownMenuItem("Input", id={'type':'dropdown-menu-std-dev-input','index':arstd_id}),
-        dbc.DropdownMenuItem(divider=True),
-        dbc.DropdownMenuItem("S&P 500 (10y)", id={'type':'dropdown-menu-std-dev-sp500','index':arstd_id}),
-        dbc.DropdownMenuItem("DJIA (34y)", id={'type':'dropdown-menu-std-dev-djia','index':arstd_id})
-    ]
-
-
     inputgroup = dbc.InputGroup([
         dbc.InputGroupText("Average Return"), 
-        dbc.DropdownMenu(dropdown_menu_avg_return, color="secondary"),
         dbc.Input(
             id={'type':'monte-carlo-average-return', 'index':arstd_id},
             value=10,
@@ -29,7 +14,6 @@ def create_asset_source(arstd_id):
         dbc.InputGroupText("%"),
         dbc.InputGroupText(" "), # Gap
         dbc.InputGroupText("Standard Deviation"), 
-        dbc.DropdownMenu(dropdown_menu_std_dev, color="secondary"),
         dbc.Input(
             id={'type':'monte-carlo-standard-deviation', 'index':arstd_id},
             value=15,
