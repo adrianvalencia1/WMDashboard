@@ -375,25 +375,21 @@ def get_arstd_children(children):
     std_devs = []
 
     for input_group in children[1:]:
-        if hasattr(input_group, 'get'):
-            for input_group_attribute in input_group.get('props').items(): # looping through inputgroups' inputs
-                if input_group_attribute[0] == 'children':
-                    for item in input_group_attribute[1]:
-                        if 'id' in item.get('props'):
-                            if item.get('props').get('id').get('type') == 'monte-carlo-ratio':
-                                ratios.append(item.get('props').get('value'))
-                            if item.get('props').get('id').get('type') == 'monte-carlo-average-return':
-                                avg_returns.append(item.get('props').get('value'))
-                            if item.get('props').get('id').get('type') == 'monte-carlo-standard-deviation':
-                                std_devs.append(item.get('props').get('value'))
+        if isinstance(input_group, dict):
+            children_items = input_group.get('props', {}).get('children', [])
+            
+            for item in children_items:
+                item_props = item.get('props', {})
+                item_type = item_props.get('id', {}).get('type')
+    
+                if item_type == 'monte-carlo-ratio':
+                    ratios.append(item_props.get('value'))
+                elif item_type == 'monte-carlo-average-return':
+                    avg_returns.append(item_props.get('value'))
+                elif item_type == 'monte-carlo-standard-deviation':
+                    std_devs.append(item_props.get('value'))
     
     ratios_norm = normalize_to_percentage(ratios)
-
-    #df = pd.DataFrame({
-    #    'Average Return':avg_returns,
-    #    'Standard Deviation':std_devs,
-    #    'Ratio': ratios_norm
-    #})
 
     weighted_average_average_returns = weighted_average(avg_returns, ratios_norm)
     weighted_average_standard_deviations = math.sqrt(weighted_average(np.array(std_devs)*np.array(std_devs), ratios_norm))

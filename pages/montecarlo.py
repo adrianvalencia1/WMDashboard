@@ -2,7 +2,7 @@ from datetime import datetime
 import math
 import time
 import util.util as u
-from dash import dcc, html, dash_table, ctx, callback, register_page
+from dash import dcc, html, dash_table, ctx, callback, register_page, callback_context, MATCH
 import numpy as np
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
@@ -16,19 +16,19 @@ import util.cwutil as cw
 MAX_SIMULATIONS = 100000
 MAX_TIME_PERIODS = 100
 
-dropdown_menu_avg_return = [
-    dbc.DropdownMenuItem("Input", id={'type':'dropdown-menu-avg-return-input','index':1}),
-    dbc.DropdownMenuItem(divider=True),
-    dbc.DropdownMenuItem("S&P 500 (10y)", id={'type':'dropdown-menu-avg-return-sp500','index':1}),
-    dbc.DropdownMenuItem("DJIA (34y)", id={'type':'dropdown-menu-avg-return-djia','index':1}),
-]
-dropdown_menu_std_dev = [
-    dbc.DropdownMenuItem("Input", id={'type':'dropdown-menu-std-dev-input','index':1}),
-    dbc.DropdownMenuItem(divider=True),
-    dbc.DropdownMenuItem("S&P 500 (10y)", id={'type':'dropdown-menu-std-dev-sp500','index':1}),
-    dbc.DropdownMenuItem("DJIA (34y)", id={'type':'dropdown-menu-std-dev-djia','index':1})
+dropdown_menu_items = [
+    {"label": "VTI", "value": "vti"},
+    {"label": "ITOT", "value": "itot"},
+    {"label": "S&P 500", "value": "sp500"},
+    
 ]
 
+index_presets = {
+    "vti":[10.66, 15.56],
+    "itot":[12.24, 15.62],
+    "sp500":[11.03, 15.28],
+    
+}
 
 register_page(
     __name__,
@@ -76,7 +76,7 @@ def layout():
                             dbc.InputGroupText("$"), 
                             dbc.Input(
                                 id='initial-investment',
-                                value=1,
+                                value=10000,
                                 min=0,
                                 type='number',
                                 placeholder="Initial Investment"
@@ -103,41 +103,47 @@ def layout():
                                                 color='secondary'
                                             ),
                                         ], style={'display':'flex', 'gap':'1vh'}),
-                                        dbc.InputGroup([
-                                            dbc.InputGroupText("Average Return"), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-average-return', 'index':1},
-                                                value=10,
-                                                type='number',
-                                                required=True,
-                                                placeholder="Enter Average Return"
+                                        html.Div([
+                                            dcc.Dropdown(
+                                                dropdown_menu_items, 
+                                                id={'type':'monte-carlo-arstd-dropdown', 'index':1},
+                                                style={'min-width':'15vh'},
                                             ),
-                                            dbc.InputGroupText("%"),
-                                            dbc.InputGroupText(" "), # Gap
-                                            dbc.InputGroupText("Standard Deviation"), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-standard-deviation', 'index':1},
-                                                value=15,
-                                                type='number',
-                                                required=True,
-                                                placeholder="Enter Standard Deviation"
-                                            ),
-                                            dbc.InputGroupText("%"),
-                                            dbc.InputGroupText(" "), # Gap
-                                            dbc.InputGroupText("Ratio"), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-ratio', 'index':1},
-                                                value=100,
-                                                min=0,
-                                                max=100,
-                                                type='number',
-                                                required=True,
-                                                placeholder="Enter Ratio"
-                                            ),
-                                            dbc.InputGroupText("%"),
-                                        ])
-                                    ], 
-                                    style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
+                                            dbc.InputGroup([
+                                                dbc.InputGroupText("Average Return"), 
+                                                dbc.Input(
+                                                    id={'type':'monte-carlo-average-return', 'index':1},
+                                                    value=10,
+                                                    type='number',
+                                                    required=True,
+                                                    placeholder="Enter Average Return"
+                                                ),
+                                                dbc.InputGroupText("%"),
+                                                dbc.InputGroupText(" "), # Gap
+                                                dbc.InputGroupText("Standard Deviation"), 
+                                                dbc.Input(
+                                                    id={'type':'monte-carlo-standard-deviation', 'index':1},
+                                                    value=15,
+                                                    type='number',
+                                                    required=True,
+                                                    placeholder="Enter Standard Deviation"
+                                                ),
+                                                dbc.InputGroupText("%"),
+                                                dbc.InputGroupText(" "), # Gap
+                                                dbc.InputGroupText("Ratio"), 
+                                                dbc.Input(
+                                                    id={'type':'monte-carlo-ratio', 'index':1},
+                                                    value=100,
+                                                    min=0,
+                                                    max=100,
+                                                    type='number',
+                                                    required=True,
+                                                    placeholder="Enter Ratio"
+                                                ),
+                                                dbc.InputGroupText("%"),
+                                            ])
+                                        ], style={'display':'flex', 'gap':'1vh'})
+                                    ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
                                 ),
                             ])
                         ),
@@ -394,6 +400,19 @@ def update_cw_container(arstd_clicks, children):
         
     return children
 
+# Preset indexes
+@callback(
+    [Output({'type':'monte-carlo-average-return', 'index':MATCH}, 'value'),
+     Output({'type':'monte-carlo-standard-deviation', 'index':MATCH}, 'value')],
+    Input({'type':'monte-carlo-arstd-dropdown', 'index':MATCH}, 'value'),
+    State({'type':'monte-carlo-arstd-dropdown', 'index':MATCH}, 'id'),
+)
+def update_preset_index(value, id):
+    if value is None: 
+        raise PreventUpdate
+
+    return index_presets.get(value)
+
 ###############################
 # CONTRIBUTIONS / WITHDRAWALS #
 ###############################
@@ -421,14 +440,15 @@ def update_cw_container(nc, nw, time_periods, children):
     
     # after 3 hours it works ok
     for input_group in children[1:]: # looping across inputgroups
-        if hasattr(input_group, 'get'):
-            for input_group_attribute in input_group.get('props').items(): # looping through inputgroups' inputs
-                if input_group_attribute[0] == 'children':
-                    for item in input_group_attribute[1]:
-                        if 'id' in item.get('props'):
-                            if item.get('props').get('id').get('type') == 'monte-carlo-contribution-end' or item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-end':
-                                if 'max' in item.get('props'):
-                                    item.get('props')['max'] = time_periods
+        if isinstance(input_group, dict):
+            props = input_group.get('props', {})
+            children_items = props.get('children', [])
+            for item in children_items:
+                item_props = item.get('props', {})
+                item_id = item_props.get('id', {})
+                if item_id.get('type') in ['monte-carlo-contribution-end', 'monte-carlo-withdrawal-end']:
+                    if 'max' in item.get('props'):
+                       item.get('props')['max'] = time_periods
         
     return children
     
@@ -536,17 +556,7 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Input('monte-carlo-time-interval', 'value')],
     
 )
-def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_children, threshold_input, threshold_type, cw_children, threshold_direction, time_interval):
-    # prevent updates for null inputs
-    #if not contribution_start:
-    #    contribution_start = 0
-    #if not contribution_end:
-    #    contribution_end = 0
-    #if not withdrawal_start:
-    #    withdrawal_start = 0
-    #if not withdrawal_end:
-    #    withdrawal_end = 0
-    
+def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_children, threshold_input, threshold_type, cw_children, threshold_direction, time_interval):    
     df = None
     datatable_columns = None
     style_data_conditional =[]
@@ -558,11 +568,12 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_c
         n_clicks = 0
     if n_clicks != 0:
         
+        # Averaging out stddevs and avg returns
         avg_temp, standard_deviation_temp = u.get_arstd_children(arstd_children)
-
         avg = avg_temp/100
         standard_deviation = standard_deviation_temp/100
 
+        # Switch between months and years
         if time_interval == "m":
             current_year = datetime.now()
             end_period = (current_year+relativedelta(months=years)).strftime("%Y-%m")
@@ -571,7 +582,6 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_c
             x_range = [date.strftime("%Y-%m") for date in date_range]
             avg /= 12
             standard_deviation /= math.sqrt(12)
-
         elif time_interval == "y":
             current_year = datetime.now().year
             x_range = [current_year+i for i in range(years+1)]
@@ -597,32 +607,27 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_c
                 withdrawal_start = 0
                 withdrawal_end = 0
 
-                for input_group in cw_children[1:]: # looping across inputgroups
-                    if hasattr(input_group, 'get'):
-                        for input_group_attribute in input_group.get('props').items(): # looping through inputgroups' inputs
-                            if input_group_attribute[0] == 'children':
-                                for item in input_group_attribute[1]:
-                                    if 'id' in item.get('props'):
-                                        if item.get('props').get('id').get('type') == 'monte-carlo-contribution-start':
-                                            contribution_start = item.get('props').get('value')
-                                            if contribution_start is None:
-                                                contribution_start = 0
-                                        if item.get('props').get('id').get('type') == 'monte-carlo-contribution-end':
-                                            contribution_end = item.get('props').get('value')
-                                            if contribution_end is None:
-                                                contribution_end = 0
-                                        if item.get('props').get('id').get('type') == 'monte-carlo-contribution-input':
-                                            contribution = item.get('props').get('value')
-                                        if item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-start':
-                                            withdrawal_start = item.get('props').get('value')
-                                            if withdrawal_start is None:
-                                                withdrawal_start = 0
-                                        if item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-end':
-                                            withdrawal_end = item.get('props').get('value')
-                                            if withdrawal_end is None:
-                                                withdrawal_end = 0
-                                        if item.get('props').get('id').get('type') == 'monte-carlo-withdrawal-input':
-                                            withdrawal = item.get('props').get('value')
+                for input_group in cw_children[1:]:
+                    if isinstance(input_group, dict):
+                        props = input_group.get('props', {})
+                        children_items = props.get('children', [])
+                        
+                        for item in children_items:
+                            item_props = item.get('props', {})
+                            item_id = item_props.get('id', {}).get('type')
+                
+                            if item_id == 'monte-carlo-contribution-start':
+                                contribution_start = item_props.get('value', 0)
+                            elif item_id == 'monte-carlo-contribution-end':
+                                contribution_end = item_props.get('value', 0)
+                            elif item_id == 'monte-carlo-contribution-input':
+                                contribution = item_props.get('value', 0)
+                            elif item_id == 'monte-carlo-withdrawal-start':
+                                withdrawal_start = item_props.get('value', 0)
+                            elif item_id == 'monte-carlo-withdrawal-end':
+                                withdrawal_end = item_props.get('value', 0)
+                            elif item_id == 'monte-carlo-withdrawal-input':
+                                withdrawal = item_props.get('value', 0)
                             
                 if contribution_start-1 <= year <= contribution_end-1:
                     portfolio_values[simulation][year+1] += contribution
