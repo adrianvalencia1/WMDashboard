@@ -1,5 +1,6 @@
 from datetime import datetime
 import math
+import re
 import time
 import util.util as u
 from dash import dcc, html, dash_table, ctx, callback, register_page, callback_context, MATCH, ALL
@@ -15,6 +16,7 @@ import util.datautil as du
 
 MAX_SIMULATIONS = 100000
 MAX_TIME_PERIODS = 100
+START_DATE = (datetime.today() + relativedelta(years=10)).strftime('%m/%Y')
 
 # Load in index presets from data folder
 dropdown_menu_items = du.load_index_presets('dropdown')
@@ -240,26 +242,27 @@ def layout():
             
             # Simulation Settings
             html.Div([
+                dcc.Store(id='monte-carlo-intervals-data'),
                 dbc.Card(
                     dbc.CardBody([
                         html.H4(['Simulation'],),
                         dbc.InputGroup([
                             dbc.Select(
                                 options=[
-                                    {"label": "Years", "value": "y"},
                                     {"label": "Months", "value": "m"},
+                                    {"label": "Years", "value": "y"}
                                 ],
-                                value="y",
+                                value="m",
                                 id="monte-carlo-time-interval"
                             ),
                             # TIME PERIODS
                             dbc.Input(
                                 id='monte-carlo-time-periods',
-                                value=10,
-                                min=1,
-                                max=100,
-                                type='number',
-                                placeholder="",
+                                value=START_DATE,
+                                invalid=False,
+                                type='text',
+                                placeholder="MM/YYYY",
+                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b",
                                 debounce=True
                             ),
                             dbc.Tooltip(
@@ -285,6 +288,7 @@ def layout():
                                 placement="bottom"
                             ),
                         ]),
+                        
 
                         dbc.Tooltip(
                             "A higher number of simulations increases the accuracy of the model.",
@@ -444,6 +448,45 @@ def update_cw_container(nc, nw, time_periods, children):
         
     return children
     
+##############
+# SIMULATION #
+##############
+
+# convert time periods input to intervals
+@callback(
+    Output('monte-carlo-intervals-data', 'data'),
+    [Input('monte-carlo-time-interval', 'value'),
+     Input('monte-carlo-time-periods', 'value'),
+     Input('monte-carlo-time-periods', 'invalid'),]
+)
+def store_intervals_data(interval_type, value, invalid):
+    if invalid:
+        raise PreventUpdate
+    
+    input_date = datetime.strptime(value, "%m/%Y")
+    today = datetime.today()
+
+    if interval_type == "y":
+        years_difference = input_date.year - today.year
+        return math.ceil(years_difference)
+    
+    elif interval_type == "m":
+        months_difference = (input_date.year - today.year) * 12 + input_date.month - today.month
+        return math.ceil(months_difference)
+
+# validate time periods input
+@callback(
+    [Output('monte-carlo-time-periods', 'invalid'),
+     Output('monte-carlo-button', 'disabled'),],
+    [Input('monte-carlo-time-periods', 'value'), 
+     Input('monte-carlo-time-periods', 'pattern')]
+)
+def update_time_period_validity(value, pattern):
+    if not value or not re.match(pattern, value):
+        return True, True
+    else:
+        return False, False
+"""
 # Switch time period between months and years
 @callback(
     Output("monte-carlo-time-periods", "max"),
@@ -453,7 +496,7 @@ def update_time_periods(time_interval):
     if time_interval == "m":
         return MAX_TIME_PERIODS * 12
     elif time_interval == "y":
-        return MAX_TIME_PERIODS
+        return MAX_TIME_PERIODS"""
 
 # Paragraph explaining the results of the graph
 @callback(
@@ -480,7 +523,7 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Output('data-table', 'columns'),
      Output('data-table','style_data_conditional')],
     [Input('monte-carlo-simulations', 'value'),
-     Input('monte-carlo-time-periods', 'value'),
+     Input('monte-carlo-intervals-data', 'data'),
      Input('monte-carlo-button', 'n_clicks'),
      Input('initial-investment', 'value'),
      Input('monte-carlo-threshold', 'value'),
