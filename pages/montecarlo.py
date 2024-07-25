@@ -276,7 +276,8 @@ def layout():
                                 min=1,
                                 max=10000,
                                 type='number',
-                                placeholder="Simulations"
+                                placeholder="Simulations",
+                                disabled=True
                             ),
                             dbc.Tooltip(
                                 "A higher number of simulations increases the accuracy of the model.",
@@ -453,64 +454,7 @@ def update_time_periods(time_interval):
         return MAX_TIME_PERIODS * 12
     elif time_interval == "y":
         return MAX_TIME_PERIODS
-"""
-# disable run simulation button
-@callback(
-    Output("monte-carlo-button", "disabled"),
-    [Input('monte-carlo-standard-deviation', 'value'),
-     Input('monte-carlo-average-return', 'value'),
-     Input('monte-carlo-time-periods', 'value'),
-     Input('initial-investment', 'value')]
-)
-def disable_button(stddev, avg_return, time_periods, initial_investment):
-    disable = False
-    if stddev == "" or avg_return == "":
-        disable = True
-    if time_periods is None:
-        disable = True
-    if initial_investment is None:
-        disable = True
-    return disable
 
-@callback(
-    Output("monte-carlo-standard-deviation", "value"),
-    [Input("dropdown-menu-std-dev-input", "n_clicks"),
-     Input("dropdown-menu-std-dev-sp500", "n_clicks"),
-     Input("dropdown-menu-std-dev-djia", "n_clicks")],
-)
-def std_dev_dropdown(n1, n2, n3):
-    if not ctx.triggered:
-        return ""
-    else:
-        button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-    if button_id == "dropdown-menu-std-dev-input":
-        return 0
-    elif button_id == "dropdown-menu-std-dev-sp500":
-        return 15.51
-    elif button_id == "dropdown-menu-std-dev-djia":
-        return 14.68
-
-@callback(
-    Output("monte-carlo-average-return", "value"),
-    [Input("dropdown-menu-avg-return-input", "n_clicks"),
-     Input("dropdown-menu-avg-return-sp500", "n_clicks"),
-     Input("dropdown-menu-avg-return-djia", "n_clicks")],
-)
-def avg_return_dropdown(n1, n2, n3):
-
-    if not ctx.triggered:
-        return ""
-    else:
-        button_id = ctx.triggered[0]["prop_id"].split(".")[0]
-
-    if button_id == "dropdown-menu-avg-return-input":
-        return 0
-    elif button_id == "dropdown-menu-avg-return-sp500":
-        return 13.05
-    elif button_id == "dropdown-menu-avg-return-djia":
-        return 10.79
-    """
 # Paragraph explaining the results of the graph
 @callback(
     [Output('monte-carlo-graph-info-header', 'children'),
