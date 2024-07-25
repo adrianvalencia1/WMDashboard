@@ -1,14 +1,13 @@
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-def create_asset_source(arstd_id):
+def create_asset_source(arstd_id, dropdown_menu_items):
 
-    dropdown_menu_items = [
-        {"label": "VTI", "value": "vti"},
-        {"label": "ITOT", "value": "itot"},
-        {"label": "S&P 500", "value": "sp500"},
-
-    ]
-
+    #dropdown_menu_items = [
+    #    {"label": "VTI", "value": "vti"},
+    #    {"label": "ITOT", "value": "itot"},
+    #    {"label": "S&P 500", "value": "sp500"},
+#
+    #]
 
     inputgroup = html.Div([
         dcc.Dropdown(

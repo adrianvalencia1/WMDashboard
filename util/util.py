@@ -368,29 +368,30 @@ def weighted_average(values, weights):
     weighted_sum = sum(v * w for v, w in zip(values, weights))
     return weighted_sum / total_weight
 
-def get_arstd_children(children):
+def get_arstd_children(ratios, avg_returns, std_devs):
 
-    ratios = []
-    avg_returns = []
-    std_devs = []
+    #ratios = []
+    #avg_returns = []
+    #std_devs = []
 
-    for input_group in children[1:]:
-        if isinstance(input_group, dict):
-            children_items = input_group.get('props', {}).get('children', [])
-            
-            for item in children_items:
-                item_props = item.get('props', {})
-                item_type = item_props.get('id', {}).get('type')
-    
-                if item_type == 'monte-carlo-ratio':
-                    ratios.append(item_props.get('value'))
-                elif item_type == 'monte-carlo-average-return':
-                    avg_returns.append(item_props.get('value'))
-                elif item_type == 'monte-carlo-standard-deviation':
-                    std_devs.append(item_props.get('value'))
+    # TODO: FIX ASAP
+    #for input_group in children[1:]:
+    #    if hasattr(input_group, 'get'):
+    #        del input_group.get('props').get('children')[0]
+    #        print(input_group)
+    #        for input_group_attribute in input_group.get('props').items(): # looping through inputgroups' inputs
+    #            if input_group_attribute[0] == 'children':
+    #                for item in input_group_attribute[1]:
+    #                    if 'id' in item.get('props'):
+    #                        if item.get('props').get('id').get('type') == 'monte-carlo-ratio':
+    #                            ratios.append(item.get('props').get('value'))
+    #                        if item.get('props').get('id').get('type') == 'monte-carlo-average-return':
+    #                            avg_returns.append(item.get('props').get('value'))
+    #                        if item.get('props').get('id').get('type') == 'monte-carlo-standard-deviation':
+    #                            std_devs.append(item.get('props').get('value'))
     
     ratios_norm = normalize_to_percentage(ratios)
-
+    
     weighted_average_average_returns = weighted_average(avg_returns, ratios_norm)
     weighted_average_standard_deviations = math.sqrt(weighted_average(np.array(std_devs)*np.array(std_devs), ratios_norm))
 

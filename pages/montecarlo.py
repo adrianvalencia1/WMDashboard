@@ -2,7 +2,7 @@ from datetime import datetime
 import math
 import time
 import util.util as u
-from dash import dcc, html, dash_table, ctx, callback, register_page, callback_context, MATCH
+from dash import dcc, html, dash_table, ctx, callback, register_page, callback_context, MATCH, ALL
 import numpy as np
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
@@ -11,24 +11,14 @@ import pandas as pd
 from dash.exceptions import PreventUpdate
 from dateutil.relativedelta import relativedelta
 import util.cwutil as cw
-
+import util.datautil as du
 
 MAX_SIMULATIONS = 100000
 MAX_TIME_PERIODS = 100
 
-dropdown_menu_items = [
-    {"label": "VTI", "value": "vti"},
-    {"label": "ITOT", "value": "itot"},
-    {"label": "S&P 500", "value": "sp500"},
-    
-]
-
-index_presets = {
-    "vti":[10.66, 15.56],
-    "itot":[12.24, 15.62],
-    "sp500":[11.03, 15.28],
-    
-}
+# Load in index presets from data folder
+dropdown_menu_items = du.load_index_presets('dropdown')
+index_presets = du.load_index_presets('data')
 
 register_page(
     __name__,
@@ -395,7 +385,7 @@ def update_cw_container(arstd_clicks, children):
     inputgroup = []
 
     if 'monte-carlo-add-arstd' == ctx.triggered_id:
-        inputgroup = cw.create_asset_source(num_children)
+        inputgroup = cw.create_asset_source(num_children, dropdown_menu_items)
     children += [inputgroup]
         
     return children
@@ -417,6 +407,7 @@ def update_preset_index(value, id):
 # CONTRIBUTIONS / WITHDRAWALS #
 ###############################
 
+# TODO: reformat to use ALL tag instead of container
 # add contributions source button
 @callback(
     Output('monte-carlo-cw-container', 'children'),
@@ -548,15 +539,17 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Input('monte-carlo-time-periods', 'value'),
      Input('monte-carlo-button', 'n_clicks'),
      Input('initial-investment', 'value'),
-     Input('monte-carlo-arstd-container', 'children'),
      Input('monte-carlo-threshold', 'value'),
      Input('monte-carlo-threshold-type', 'value'),
      Input('monte-carlo-cw-container', 'children'),
      Input('monte-carlo-threshold-direction', 'value'),
-     Input('monte-carlo-time-interval', 'value')],
+     Input('monte-carlo-time-interval', 'value'),
+     Input({'type':'monte-carlo-ratio', 'index':ALL}, 'value'),
+     Input({'type':'monte-carlo-average-return', 'index':ALL}, 'value'),
+     Input({'type':'monte-carlo-standard-deviation', 'index':ALL}, 'value')],
     
 )
-def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_children, threshold_input, threshold_type, cw_children, threshold_direction, time_interval):    
+def update_monte_carlo(simulations, years, n_clicks, initial_investment, threshold_input, threshold_type, cw_children, threshold_direction, time_interval, ratios, avg_rets, std_devs):    
     df = None
     datatable_columns = None
     style_data_conditional =[]
@@ -569,7 +562,7 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, arstd_c
     if n_clicks != 0:
         
         # Averaging out stddevs and avg returns
-        avg_temp, standard_deviation_temp = u.get_arstd_children(arstd_children)
+        avg_temp, standard_deviation_temp = u.get_arstd_children(ratios, avg_rets, std_devs)
         avg = avg_temp/100
         standard_deviation = standard_deviation_temp/100
 
