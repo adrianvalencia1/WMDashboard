@@ -16,7 +16,8 @@ import util.datautil as du
 
 MAX_SIMULATIONS = 100000
 MAX_TIME_PERIODS = 100
-START_DATE = (datetime.today() + relativedelta(years=10)).strftime('%m/%Y')
+START_DATE = datetime.today().strftime('%m/%Y')
+RUN_UNTIL_DATE = (datetime.today() + relativedelta(years=10)).strftime('%m/%Y')
 
 # Load in index presets from data folder
 dropdown_menu_items = du.load_index_presets('dropdown')
@@ -32,11 +33,7 @@ register_page(
 def layout():
 
     
-    dbc.Tooltip(
-        "The average return of an initial investment.",
-        target="monte-carlo-average-return",
-        placement="top"
-    ),
+    
 
     layout = html.Div([
     # TITLE
@@ -74,11 +71,6 @@ def layout():
                                 placeholder="Initial Investment"
                             ),
                         ]),
-                        dbc.Tooltip(
-                            "Initial investment in $.",
-                            target="initial-investment",
-                            placement="top"
-                        ),
 
                         # AVERAGE RETURN / STANDARD DEVIATION
                         dbc.Card(
@@ -99,10 +91,10 @@ def layout():
                                             dcc.Dropdown(
                                                 dropdown_menu_items, 
                                                 id={'type':'monte-carlo-arstd-dropdown', 'index':1},
-                                                style={'min-width':'15vh'},
+                                                style={'min-width':'20vh'},
                                             ),
                                             dbc.InputGroup([
-                                                dbc.InputGroupText("Average Return"), 
+                                                dbc.InputGroupText("Average Return", id='monte-carlo-average-return'), 
                                                 dbc.Input(
                                                     id={'type':'monte-carlo-average-return', 'index':1},
                                                     value=10,
@@ -112,7 +104,7 @@ def layout():
                                                 ),
                                                 dbc.InputGroupText("%"),
                                                 dbc.InputGroupText(" "), # Gap
-                                                dbc.InputGroupText("Standard Deviation"), 
+                                                dbc.InputGroupText("Standard Deviation", id="monte-carlo-standard-deviation"), 
                                                 dbc.Input(
                                                     id={'type':'monte-carlo-standard-deviation', 'index':1},
                                                     value=15,
@@ -122,17 +114,15 @@ def layout():
                                                 ),
                                                 dbc.InputGroupText("%"),
                                                 dbc.InputGroupText(" "), # Gap
-                                                dbc.InputGroupText("Ratio"), 
+                                                dbc.InputGroupText("Weight", id="monte-carlo-ratio"), 
                                                 dbc.Input(
                                                     id={'type':'monte-carlo-ratio', 'index':1},
                                                     value=100,
                                                     min=0,
-                                                    max=100,
                                                     type='number',
                                                     required=True,
-                                                    placeholder="Enter Ratio"
+                                                    placeholder="Enter Weight"
                                                 ),
-                                                dbc.InputGroupText("%"),
                                             ])
                                         ], style={'display':'flex', 'gap':'1vh'})
                                     ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
@@ -140,13 +130,12 @@ def layout():
                             ])
                         ),
                         
-                        dbc.Tooltip(
-                            "Determines by how much returns can deviate from the average. A higher standard deviation means more volatility and risk.",
-                            target="monte-carlo-standard-deviation",
-                            placement="top"
-                        ),
+                        
                         
                         # CONTRIBUTION AND WITHDRAWAL
+                        html.Div([
+                            dcc.Store(id='monte-carlo-cw-data')
+                        ]),
                         dbc.Card(
                             dbc.CardBody([
                                 html.H5(['Contributions and Withdrawals']),
@@ -169,68 +158,64 @@ def layout():
                                         ], style={'display':'flex', 'gap':'1vh'}),
                                         # CONTRIBUTION
                                         dbc.InputGroup(
-                                id={'type':'monte-carlo-contribution-igcontainer', 'index': 1},
-                                children=[ # Contribution inputs
-                                dbc.InputGroupText("Contribution"),
-                                dbc.InputGroupText("$"), 
-                                dbc.Input(
-                                    id={'type':'monte-carlo-contribution-input', 'index': 1},
-                                    value=0,
-                                    min=0,
-                                    type='number',
-                                    placeholder="Contribution"
-                                ),
-                                dbc.InputGroupText("Start"), 
-                                dbc.Input(
-                                    id={'type':'monte-carlo-contribution-start', 'index': 1},
-                                    value=0,
-                                    min=0,
-                                    max=10,
-                                    type='number',
-                                    placeholder="Start Interval"
-                                ),
-                                dbc.InputGroupText("End"), 
-                                dbc.Input(
-                                    id={'type':'monte-carlo-contribution-end', 'index': 1},
-                                    value=0,
-                                    min=0,
-                                    max=10,
-                                    type='number',
-                                    placeholder="End Interval"
-                                )]
-                            ),
+                                            id={'type':'monte-carlo-contribution-igcontainer', 'index': 1},
+                                            children=[ # Contribution inputs
+                                            dbc.InputGroupText("Contribution", id='monte-carlo-contribution-input'),
+                                            dbc.InputGroupText("$"), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-contribution-input', 'index': 1},
+                                                value=0,
+                                                min=0,
+                                                type='number',
+                                                placeholder="Contribution"
+                                            ),
+                                            dbc.InputGroupText("Start", id='monte-carlo-contribution-start'), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-contribution-start', 'index': 1},
+                                                value=START_DATE,
+                                                type='text',
+                                                placeholder="Start Interval",
+                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                            ),
+                                            dbc.InputGroupText("End", id='monte-carlo-contribution-end'), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-contribution-end', 'index': 1},
+                                                value=START_DATE,
+                                                type='text',
+                                                placeholder="End Interval",
+                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                            )]
+                                        ),
                                         # WITHDRAWAL
                                         dbc.InputGroup(
-                                id={'type':'monte-carlo-withdrawal-igcontainer', 'index':2},
-                                children=[ # Withdrawal inputs
-                                dbc.InputGroupText("Withdrawal"),
-                                dbc.InputGroupText("$"), 
-                                dbc.Input(
-                                    id={'type':'monte-carlo-withdrawal-input', 'index': 2},
-                                    value=0,
-                                    min=0,
-                                    type='number',
-                                    placeholder="Withdrawal"
-                                ),
-                                dbc.InputGroupText("Start"), 
-                                dbc.Input(
-                                    id={'type':'monte-carlo-withdrawal-start', 'index': 2},
-                                    value=0,
-                                    min=0,
-                                    max=10,
-                                    type='number',
-                                    placeholder="Start Interval"
-                                ),
-                                dbc.InputGroupText("End"), 
-                                dbc.Input(
-                                    id={'type':'monte-carlo-withdrawal-end', 'index': 2},
-                                    value=0,
-                                    min=0,
-                                    max=10,
-                                    type='number',
-                                    placeholder="End Interval"
-                                )
-                            ])
+                                            id={'type':'monte-carlo-withdrawal-igcontainer', 'index':2},
+                                            children=[ # Withdrawal inputs
+                                            dbc.InputGroupText("Withdrawal", id='monte-carlo-withdrawal-input'),
+                                            dbc.InputGroupText("$"), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-withdrawal-input', 'index': 2},
+                                                value=0,
+                                                min=0,
+                                                type='number',
+                                                placeholder="Withdrawal"
+                                            ),
+                                            dbc.InputGroupText("Start", id='monte-carlo-withdrawal-start'), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-withdrawal-start', 'index': 2},
+                                                value=START_DATE,
+                                                type='text',
+                                                placeholder="Start Interval",
+                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                            ),
+                                            dbc.InputGroupText("End", id='monte-carlo-withdrawal-end'), 
+                                            dbc.Input(
+                                                id={'type':'monte-carlo-withdrawal-end', 'index': 2},
+                                                value=START_DATE,
+                                                type='text',
+                                                placeholder="End Interval",
+                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                            )]
+                                        )
                                     ], 
                                     style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
                                 ),
@@ -240,6 +225,7 @@ def layout():
                 ),
             ], style={'max-width':'none'}),
             
+            html.Div(id='monte-carlo-update-prevention'),
             # Simulation Settings
             html.Div([
                 dcc.Store(id='monte-carlo-intervals-data'),
@@ -255,24 +241,25 @@ def layout():
                                 value="m",
                                 id="monte-carlo-time-interval"
                             ),
+                            dbc.InputGroupText("Start", id="monte-carlo-time-start"),
+                            dbc.Input(
+                                value=f"{START_DATE}",
+                                disabled=True
+                            ),
+                            dbc.InputGroupText("End", id="monte-carlo-time-end"),
                             # TIME PERIODS
                             dbc.Input(
                                 id='monte-carlo-time-periods',
-                                value=START_DATE,
+                                value=RUN_UNTIL_DATE,
                                 invalid=False,
                                 type='text',
                                 placeholder="MM/YYYY",
                                 pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b",
                                 debounce=True
                             ),
-                            dbc.Tooltip(
-                                "How many intervals the simulation will run for.",
-                                target="monte-carlo-time-periods",
-                                placement="bottom"
-                            ),
 
                             # SIMULATIONS
-                            dbc.InputGroupText("Simulations"), 
+                            dbc.InputGroupText("Simulations", id='monte-carlo-simulations-label'), 
                             dbc.Input(
                                 id='monte-carlo-simulations',
                                 value=1000,
@@ -282,19 +269,7 @@ def layout():
                                 placeholder="Simulations",
                                 disabled=True
                             ),
-                            dbc.Tooltip(
-                                "A higher number of simulations increases the accuracy of the model.",
-                                target="monte-carlo-simulations",
-                                placement="bottom"
-                            ),
-                        ]),
-                        
-
-                        dbc.Tooltip(
-                            "A higher number of simulations increases the accuracy of the model.",
-                            target="monte-carlo-simulations",
-                            placement="bottom"
-                        ),
+                        ]),                  
                     ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'})
                 ),
             ]),
@@ -369,6 +344,96 @@ def layout():
         ) 
         ],style={'padding':'0px 20vh 30px'}),
 
+        # TOOLTIPS
+        dbc.Tooltip(
+            "Initial investment in $.",
+            target="initial-investment",
+            placement="top"
+        ),
+
+        # ASSET TOOLTIPS
+        dbc.Tooltip(
+            "The average return of an initial investment.",
+            target="monte-carlo-average-return",
+            placement="top"
+        ),
+        dbc.Tooltip(
+            "Determines by how much returns can deviate from the average. A higher standard deviation means more volatility and risk.",
+            target="monte-carlo-standard-deviation",
+            placement="top"
+        ),
+        dbc.Tooltip(
+            "The weight of an asset. (Weight/Sum of all weights)",
+            target="monte-carlo-ratio",
+            placement="top"
+        ),
+
+        # CONTRIBUTION/WITHDRAWAL TOOLTIPS
+        dbc.Tooltip(
+            "Monthly/yearly contribution in $.",
+            target="monte-carlo-contribution-input",
+            placement="top"
+        ),
+        dbc.Tooltip(
+            "Contribution source start date. (MM/YYYY).",
+            target="monte-carlo-contribution-start",
+            placement="top"
+        ),
+        dbc.Tooltip(
+            "Contribution source end date. (MM/YYYY)",
+            target="monte-carlo-contribution-end",
+            placement="top"
+        ),
+
+        dbc.Tooltip(
+            "Monthly/yearly withdrawal in $.",
+            target="monte-carlo-withdrawal-input",
+            placement="bottom"
+        ),
+        dbc.Tooltip(
+            "Withdrawal source start date. (MM/YYYY).",
+            target="monte-carlo-withdrawal-start",
+            placement="bottom"
+        ),
+        dbc.Tooltip(
+            "Withdrawal source end date. (MM/YYYY)",
+            target="monte-carlo-withdrawal-end",
+            placement="bottom"
+        ),
+
+        # SIMULATION TOOLTIPS
+        dbc.Tooltip(
+            "Simulation start date. Set to today's month and year.",
+            target="monte-carlo-time-start",
+            placement="bottom"
+        ),
+        dbc.Tooltip(
+            "Simulation end date. (MM/YYYY)",
+            target="monte-carlo-time-end",
+            placement="bottom"
+        ),
+        dbc.Tooltip(
+            "A higher number of simulations increases the accuracy of the model.",
+            target="monte-carlo-simulations-label",
+            placement="bottom"
+        ),
+
+        # THRESHOLD TOOLTIPS
+        dbc.Tooltip(
+            "'Reaches' will label the first occurence of the threshold value from left to right. 'Drops to' will label the first occurence of the threshold value from right to left.",
+            target='monte-carlo-threshold-direction',
+            placement="top"
+        ),
+        dbc.Tooltip(
+            "The value to be marked on the simulation. Useful for knowing when a portfolio might reach a certain $ value.",
+            target='monte-carlo-threshold',
+            placement="top"
+        ),
+        dbc.Tooltip(
+            "Line to mark the threshold on.",
+            target='monte-carlo-threshold-type',
+            placement="top"
+        ),
     ])
     return layout
 
@@ -411,6 +476,161 @@ def update_preset_index(value, id):
 ###############################
 # CONTRIBUTIONS / WITHDRAWALS #
 ###############################
+
+# validate contribution input
+@callback(
+    Output({'type':'monte-carlo-contribution-input', 'index': MATCH}, 'invalid'),
+    Input({'type':'monte-carlo-contribution-input', 'index': MATCH}, 'value')
+)
+def validate_contribution_input(value):
+    if value is None:
+        return True
+    
+# validate withdrawal input
+@callback(
+    Output({'type':'monte-carlo-withdrawal-input', 'index': MATCH}, 'invalid'),
+    Input({'type':'monte-carlo-withdrawal-input', 'index': MATCH}, 'value')
+)
+def validate_withdrawal_input(value):
+    if value is None:
+        return True
+    
+# store contributions and withdrawal data
+@callback(
+    [Output('monte-carlo-cw-data', 'data')],
+    [Input('monte-carlo-intervals-data', 'data'),
+     Input('monte-carlo-time-interval', 'value'),
+     Input({'type':'monte-carlo-contribution-input', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-contribution-start', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-contribution-end', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-withdrawal-input', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-withdrawal-start', 'index': ALL}, 'value'), 
+     Input({'type':'monte-carlo-withdrawal-end', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-contribution-input', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-contribution-start', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-contribution-end', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-withdrawal-input', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-withdrawal-start', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-withdrawal-end', 'index': ALL}, 'invalid'),]
+)
+def store_intervals_data(intervals, interval_type,
+                         contribution_arr, contribution_start_arr, contribution_end_arr, 
+                         withdrawal_arr, withdrawal_start_arr, withdrawal_end_arr, 
+                         contribution_invalid, contribution_start_invalid, contribution_end_invalid,
+                         withdrawal_invalid, withdrawal_start_invalid, withdrawal_end_invalid):
+    
+    if any([any(contribution_start_invalid), any(contribution_end_invalid), any(withdrawal_start_invalid), any(withdrawal_end_invalid)]):
+        raise PreventUpdate
+
+    if any([any(contribution_invalid), any(withdrawal_invalid)]):
+        raise PreventUpdate
+    cw_array = [0] * intervals
+
+    start_date = datetime.strptime(START_DATE, "%m/%Y")
+
+    for contribution in range(len(contribution_arr)):
+        
+        contribution_start = datetime.strptime(contribution_start_arr[contribution], "%m/%Y")
+        contribution_end = datetime.strptime(contribution_end_arr[contribution], "%m/%Y")
+        
+        # TODO: move to own function
+        if interval_type == "y":
+            contribution_difference_start = math.ceil(contribution_start.year - start_date.year)
+            contribution_difference_end = math.ceil(contribution_end.year - start_date.year)
+        elif interval_type == "m":
+            contribution_difference_start = math.ceil((contribution_start.year - start_date.year) * 12 + contribution_start.month - start_date.month)
+            contribution_difference_end = math.ceil((contribution_end.year - start_date.year) * 12 + contribution_end.month - start_date.month)
+        for interval in range(len(cw_array)): 
+            if contribution_difference_start <= interval <= contribution_difference_end:
+                cw_array[interval] += contribution_arr[contribution]
+
+    for withdrawal in range(len(withdrawal_arr)):
+
+        withdrawal_start = datetime.strptime(withdrawal_start_arr[withdrawal], "%m/%Y")
+        withdrawal_end = datetime.strptime(withdrawal_end_arr[withdrawal], "%m/%Y")
+
+        # TODO: move to own function
+        if interval_type == "y":
+            withdrawal_difference_start = math.ceil(withdrawal_start.year - start_date.year)
+            contribution_difference_end = math.ceil(contribution_end.year - start_date.year)
+        elif interval_type == "m":
+            withdrawal_difference_start = math.ceil((withdrawal_start.year - start_date.year) * 12 + withdrawal_start.month - start_date.month)
+            withdrawal_difference_end = math.ceil((withdrawal_end.year - start_date.year) * 12 + withdrawal_end.month - start_date.month)
+
+        for interval in range(len(cw_array)):
+            if withdrawal_difference_start <= interval <= withdrawal_difference_end:
+                cw_array[interval] += withdrawal_arr[withdrawal]
+
+    return [cw_array]
+
+
+# validate withdrawal end inputs
+@callback(
+    Output({'type':'monte-carlo-withdrawal-end', 'index': MATCH}, 'invalid'),
+    [Input({'type':'monte-carlo-withdrawal-start', 'index': MATCH}, 'invalid'),
+     Input({'type':'monte-carlo-withdrawal-start', 'index': MATCH}, 'value'),
+     Input('monte-carlo-time-periods', 'value'),
+     Input({'type':'monte-carlo-withdrawal-end', 'index': MATCH}, 'value'), 
+     Input({'type':'monte-carlo-withdrawal-end', 'index': MATCH}, 'pattern')]
+)
+def update_time_period_validity(start_invalid, min_value, max_value, value, pattern):
+    if start_invalid:
+        raise PreventUpdate
+    if not value or not re.match(pattern, value): #TODO: revise regex, causing errors on \\ after text
+        return True
+    elif datetime.strptime(min_value, '%m/%Y') > datetime.strptime(value, '%m/%Y') > datetime.strptime(max_value, '%m/%Y'):
+        return True
+    else:
+        return False
+    
+# validate withdrawal start inputs
+@callback(
+    Output({'type':'monte-carlo-withdrawal-start', 'index': MATCH}, 'invalid'),
+    [Input('monte-carlo-time-periods', 'value'),
+     Input({'type':'monte-carlo-withdrawal-start', 'index': MATCH}, 'value'), 
+     Input({'type':'monte-carlo-withdrawal-start', 'index': MATCH}, 'pattern')]
+)
+def update_time_period_validity(max_value, value, pattern):
+    if not value or not re.match(pattern, value):
+        return True
+    elif datetime.strptime(START_DATE, '%m/%Y') > datetime.strptime(value, '%m/%Y') > datetime.strptime(max_value, '%m/%Y'): # must be greater than or equal to start date
+        return True
+    else:
+        return False
+
+# validate contribution end inputs
+@callback(
+    Output({'type':'monte-carlo-contribution-end', 'index': MATCH}, 'invalid'),
+    [Input({'type':'monte-carlo-contribution-start', 'index': MATCH}, 'invalid'),
+     Input({'type':'monte-carlo-contribution-start', 'index': MATCH}, 'value'),
+     Input('monte-carlo-time-periods', 'value'),
+     Input({'type':'monte-carlo-contribution-end', 'index': MATCH}, 'value'), 
+     Input({'type':'monte-carlo-contribution-end', 'index': MATCH}, 'pattern')]
+)
+def update_time_period_validity(start_invalid, min_value, max_value, value, pattern):
+    if start_invalid:
+        raise PreventUpdate
+    if not value or not re.match(pattern, value):
+        return True
+    elif datetime.strptime(min_value, '%m/%Y') > datetime.strptime(value, '%m/%Y') > datetime.strptime(max_value, '%m/%Y'):
+        return True
+    else:
+        return False
+    
+# validate contribution start inputs
+@callback(
+    Output({'type':'monte-carlo-contribution-start', 'index': MATCH}, 'invalid'),
+    [Input('monte-carlo-time-periods', 'value'),
+     Input({'type':'monte-carlo-contribution-start', 'index': MATCH}, 'value'), 
+     Input({'type':'monte-carlo-contribution-start', 'index': MATCH}, 'pattern')]
+)
+def update_time_period_validity(max_value, value, pattern):
+    if not value or not re.match(pattern, value):
+        return True
+    elif datetime.strptime(START_DATE, '%m/%Y') > datetime.strptime(value, '%m/%Y') > datetime.strptime(max_value, '%m/%Y'): # must be greater than or equal to start date
+        return True
+    else:
+        return False
 
 # TODO: reformat to use ALL tag instead of container
 # add contributions source button
@@ -476,27 +696,15 @@ def store_intervals_data(interval_type, value, invalid):
 
 # validate time periods input
 @callback(
-    [Output('monte-carlo-time-periods', 'invalid'),
-     Output('monte-carlo-button', 'disabled'),],
+    Output('monte-carlo-time-periods', 'invalid'),
     [Input('monte-carlo-time-periods', 'value'), 
      Input('monte-carlo-time-periods', 'pattern')]
 )
 def update_time_period_validity(value, pattern):
     if not value or not re.match(pattern, value):
-        return True, True
+        return True
     else:
-        return False, False
-"""
-# Switch time period between months and years
-@callback(
-    Output("monte-carlo-time-periods", "max"),
-    Input("monte-carlo-time-interval", "value")
-)
-def update_time_periods(time_interval):
-    if time_interval == "m":
-        return MAX_TIME_PERIODS * 12
-    elif time_interval == "y":
-        return MAX_TIME_PERIODS"""
+        return False
 
 # Paragraph explaining the results of the graph
 @callback(
@@ -529,6 +737,7 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Input('monte-carlo-threshold', 'value'),
      Input('monte-carlo-threshold-type', 'value'),
      Input('monte-carlo-cw-container', 'children'),
+     Input('monte-carlo-cw-data', 'data'),
      Input('monte-carlo-threshold-direction', 'value'),
      Input('monte-carlo-time-interval', 'value'),
      Input({'type':'monte-carlo-ratio', 'index':ALL}, 'value'),
@@ -536,7 +745,7 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Input({'type':'monte-carlo-standard-deviation', 'index':ALL}, 'value')],
     
 )
-def update_monte_carlo(simulations, years, n_clicks, initial_investment, threshold_input, threshold_type, cw_children, threshold_direction, time_interval, ratios, avg_rets, std_devs):    
+def update_monte_carlo(simulations, years, n_clicks, initial_investment, threshold_input, threshold_type, cw_children, cw_array, threshold_direction, time_interval, ratios, avg_rets, std_devs):    
     df = None
     datatable_columns = None
     style_data_conditional =[]
@@ -587,40 +796,42 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, thresho
                 withdrawal_start = 0
                 withdrawal_end = 0
 
-                for input_group in cw_children[1:]:
-                    if isinstance(input_group, dict):
-                        props = input_group.get('props', {})
-                        children_items = props.get('children', [])
-                        
-                        for item in children_items:
-                            item_props = item.get('props', {})
-                            item_id = item_props.get('id', {}).get('type')
+                #for input_group in cw_children[1:]:
+                #    if isinstance(input_group, dict):
+                #        props = input_group.get('props', {})
+                #        children_items = props.get('children', [])
+                #        
+                #        for item in children_items:
+                #            item_props = item.get('props', {})
+                #            item_id = item_props.get('id', {}).get('type')
+                #
+                #            if item_id == 'monte-carlo-contribution-start':
+                #                contribution_start = item_props.get('value', 0)
+                #            elif item_id == 'monte-carlo-contribution-end':
+                #                contribution_end = item_props.get('value', 0)
+                #            elif item_id == 'monte-carlo-contribution-input':
+                #                contribution = item_props.get('value', 0)
+                #            elif item_id == 'monte-carlo-withdrawal-start':
+                #                withdrawal_start = item_props.get('value', 0)
+                #            elif item_id == 'monte-carlo-withdrawal-end':
+                #                withdrawal_end = item_props.get('value', 0)
+                #            elif item_id == 'monte-carlo-withdrawal-input':
+                #                withdrawal = item_props.get('value', 0)
+                #            
+                #if contribution_start-1 <= year <= contribution_end-1:
+                #    portfolio_values[simulation][year+1] += contribution
+#
+                #if withdrawal_start-1 <= year <= withdrawal_end-1:
+                #    portfolio_values[simulation][year+1] -= withdrawal
+#
+                #if portfolio_values[simulation][year+1] < 0:
+                #    portfolio_values[simulation][year+1] = 0.0000001
+#
+                #if portfolio_values_clone[simulation][year+1] < 0:
+                #    portfolio_values_clone[simulation][year+1] = 0.0000001
                 
-                            if item_id == 'monte-carlo-contribution-start':
-                                contribution_start = item_props.get('value', 0)
-                            elif item_id == 'monte-carlo-contribution-end':
-                                contribution_end = item_props.get('value', 0)
-                            elif item_id == 'monte-carlo-contribution-input':
-                                contribution = item_props.get('value', 0)
-                            elif item_id == 'monte-carlo-withdrawal-start':
-                                withdrawal_start = item_props.get('value', 0)
-                            elif item_id == 'monte-carlo-withdrawal-end':
-                                withdrawal_end = item_props.get('value', 0)
-                            elif item_id == 'monte-carlo-withdrawal-input':
-                                withdrawal = item_props.get('value', 0)
-                            
-                if contribution_start-1 <= year <= contribution_end-1:
-                    portfolio_values[simulation][year+1] += contribution
+                portfolio_values[simulation][year+1] += cw_array[year]
 
-                if withdrawal_start-1 <= year <= withdrawal_end-1:
-                    portfolio_values[simulation][year+1] -= withdrawal
-
-                if portfolio_values[simulation][year+1] < 0:
-                    portfolio_values[simulation][year+1] = 0.0000001
-
-                if portfolio_values_clone[simulation][year+1] < 0:
-                    portfolio_values_clone[simulation][year+1] = 0.0000001
-                
             fig.add_trace(go.Scatter(x=x_range, y=portfolio_values[simulation], line=dict(width=3, color='gray'), text=returns_text, name=f"Simulation {simulation+1}", visible='legendonly'))
 
         # Mean

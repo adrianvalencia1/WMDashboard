@@ -369,30 +369,15 @@ def weighted_average(values, weights):
     return weighted_sum / total_weight
 
 def get_arstd_children(ratios, avg_returns, std_devs):
-
-    #ratios = []
-    #avg_returns = []
-    #std_devs = []
-
-    # TODO: FIX ASAP
-    #for input_group in children[1:]:
-    #    if hasattr(input_group, 'get'):
-    #        del input_group.get('props').get('children')[0]
-    #        print(input_group)
-    #        for input_group_attribute in input_group.get('props').items(): # looping through inputgroups' inputs
-    #            if input_group_attribute[0] == 'children':
-    #                for item in input_group_attribute[1]:
-    #                    if 'id' in item.get('props'):
-    #                        if item.get('props').get('id').get('type') == 'monte-carlo-ratio':
-    #                            ratios.append(item.get('props').get('value'))
-    #                        if item.get('props').get('id').get('type') == 'monte-carlo-average-return':
-    #                            avg_returns.append(item.get('props').get('value'))
-    #                        if item.get('props').get('id').get('type') == 'monte-carlo-standard-deviation':
-    #                            std_devs.append(item.get('props').get('value'))
-    
     ratios_norm = normalize_to_percentage(ratios)
     
     weighted_average_average_returns = weighted_average(avg_returns, ratios_norm)
     weighted_average_standard_deviations = math.sqrt(weighted_average(np.array(std_devs)*np.array(std_devs), ratios_norm))
 
     return weighted_average_average_returns, weighted_average_standard_deviations
+
+def any_none(arr):
+    for i in arr:
+        if i is None:
+            return True
+    return False

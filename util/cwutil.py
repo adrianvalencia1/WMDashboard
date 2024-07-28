@@ -1,19 +1,17 @@
+from datetime import datetime
 import dash_bootstrap_components as dbc
 from dash import dcc, html
-def create_asset_source(arstd_id, dropdown_menu_items):
+from dateutil.relativedelta import relativedelta
 
-    #dropdown_menu_items = [
-    #    {"label": "VTI", "value": "vti"},
-    #    {"label": "ITOT", "value": "itot"},
-    #    {"label": "S&P 500", "value": "sp500"},
-#
-    #]
+START_DATE = datetime.today().strftime('%m/%Y')
+
+def create_asset_source(arstd_id, dropdown_menu_items):
 
     inputgroup = html.Div([
         dcc.Dropdown(
             dropdown_menu_items, 
             id={'type':'monte-carlo-arstd-dropdown', 'index':arstd_id},
-            style={'min-width':'15vh'},
+            style={'min-width':'20vh'},
         ),
         dbc.InputGroup([
             dbc.InputGroupText("Average Return"), 
@@ -36,17 +34,15 @@ def create_asset_source(arstd_id, dropdown_menu_items):
             ),
             dbc.InputGroupText("%"),
             dbc.InputGroupText(" "), # Gap
-            dbc.InputGroupText("Ratio"), 
+            dbc.InputGroupText("Weight"), 
             dbc.Input(
                 id={'type':'monte-carlo-ratio', 'index':arstd_id},
                 value=100,
                 min=0,
-                max=100,
                 type='number',
                 required=True,
-                placeholder="Enter Ratio"
+                placeholder="Enter Weight"
             ),
-            dbc.InputGroupText("%"),
         ])
     ], style={'display':'flex', 'gap':'1vh'})
 
@@ -64,27 +60,25 @@ def create_cw_source(cw_id, max_interval, cw_type):
                 value=0,
                 min=0,
                 type='number',
-                placeholder=cw_type
+                placeholder=cw_type.lower(),
             ),
 
             dbc.InputGroupText("Start"), 
             dbc.Input(
                 id={'type':'monte-carlo-' + cw_type.lower() + '-start', 'index':cw_id},
-                value=0,
-                min=0,
-                max=10,
-                type='number',
-                placeholder="Start Interval"
+                value=START_DATE,
+                type='text',
+                placeholder="Start Interval",
+                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
             ),
 
             dbc.InputGroupText("End"), 
             dbc.Input(
                 id={'type':'monte-carlo-' + cw_type.lower() + '-end', 'index':cw_id},
-                value=0,
-                min=0,
-                max=max_interval,
-                type='number',
-                placeholder="End Interval"
+                value=START_DATE,
+                type='text',
+                placeholder="End Interval",
+                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
             ),
         ]
     )
