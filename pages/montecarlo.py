@@ -559,7 +559,7 @@ def store_intervals_data(intervals, interval_type,
 
         for interval in range(len(cw_array)):
             if withdrawal_difference_start <= interval <= withdrawal_difference_end:
-                cw_array[interval] += withdrawal_arr[withdrawal]
+                cw_array[interval] -= withdrawal_arr[withdrawal]
 
     return [cw_array]
 
@@ -632,8 +632,7 @@ def update_time_period_validity(max_value, value, pattern):
     else:
         return False
 
-# TODO: reformat to use ALL tag instead of container
-# add contributions source button
+# add contributions and withdrawals source button
 @callback(
     Output('monte-carlo-cw-container', 'children'),
     [Input('monte-carlo-add-c', 'n_clicks'),
@@ -653,21 +652,9 @@ def update_cw_container(nc, nw, time_periods, children):
     elif 'monte-carlo-add-w' == ctx.triggered_id:
         inputgroup = cw.create_cw_source(num_children, time_periods, "Withdrawal")
     children += [inputgroup]
-    
-    # after 3 hours it works ok
-    for input_group in children[1:]: # looping across inputgroups
-        if isinstance(input_group, dict):
-            props = input_group.get('props', {})
-            children_items = props.get('children', [])
-            for item in children_items:
-                item_props = item.get('props', {})
-                item_id = item_props.get('id', {})
-                if item_id.get('type') in ['monte-carlo-contribution-end', 'monte-carlo-withdrawal-end']:
-                    if 'max' in item.get('props'):
-                       item.get('props')['max'] = time_periods
-        
+
     return children
-    
+
 ##############
 # SIMULATION #
 ##############
@@ -788,47 +775,6 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, thresho
             for year in range(years):
                 portfolio_values[simulation][year+1] = (portfolio_values[simulation][year]) * (1 + returns[year])
                 portfolio_values_clone[simulation][year+1] = (portfolio_values_clone[simulation][year]) * (1 + returns[year])
-
-                withdrawal = 0
-                contribution = 0
-                contribution_start = 0
-                contribution_end = 0 
-                withdrawal_start = 0
-                withdrawal_end = 0
-
-                #for input_group in cw_children[1:]:
-                #    if isinstance(input_group, dict):
-                #        props = input_group.get('props', {})
-                #        children_items = props.get('children', [])
-                #        
-                #        for item in children_items:
-                #            item_props = item.get('props', {})
-                #            item_id = item_props.get('id', {}).get('type')
-                #
-                #            if item_id == 'monte-carlo-contribution-start':
-                #                contribution_start = item_props.get('value', 0)
-                #            elif item_id == 'monte-carlo-contribution-end':
-                #                contribution_end = item_props.get('value', 0)
-                #            elif item_id == 'monte-carlo-contribution-input':
-                #                contribution = item_props.get('value', 0)
-                #            elif item_id == 'monte-carlo-withdrawal-start':
-                #                withdrawal_start = item_props.get('value', 0)
-                #            elif item_id == 'monte-carlo-withdrawal-end':
-                #                withdrawal_end = item_props.get('value', 0)
-                #            elif item_id == 'monte-carlo-withdrawal-input':
-                #                withdrawal = item_props.get('value', 0)
-                #            
-                #if contribution_start-1 <= year <= contribution_end-1:
-                #    portfolio_values[simulation][year+1] += contribution
-#
-                #if withdrawal_start-1 <= year <= withdrawal_end-1:
-                #    portfolio_values[simulation][year+1] -= withdrawal
-#
-                #if portfolio_values[simulation][year+1] < 0:
-                #    portfolio_values[simulation][year+1] = 0.0000001
-#
-                #if portfolio_values_clone[simulation][year+1] < 0:
-                #    portfolio_values_clone[simulation][year+1] = 0.0000001
                 
                 portfolio_values[simulation][year+1] += cw_array[year]
 
