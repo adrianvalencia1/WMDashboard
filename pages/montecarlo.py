@@ -87,7 +87,7 @@ def layout():
                                                 color='secondary'
                                             ),
                                         ], style={'display':'flex', 'gap':'1vh'}),
-                                        html.Div([
+                                        html.Div(id={'type':'monte-carlo-arstd-row', 'index':1}, children=[
                                             dcc.Dropdown(
                                                 dropdown_menu_items, 
                                                 id={'type':'monte-carlo-arstd-dropdown', 'index':1},
@@ -122,7 +122,13 @@ def layout():
                                                     placeholder="Enter Weight"
                                                 ),
                                                 dbc.InputGroupText("%"),
-                                            ])
+                                            ]),
+                                            dbc.Button(
+                                                "x",
+                                                id={'type':'monte-carlo-arstd-delete', 'index':1},
+                                                n_clicks=0,
+                                                color='secondary',
+                                            )
                                         ], style={'display':'flex', 'gap':'1vh'})
                                     ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
                                 ),
@@ -473,7 +479,7 @@ def update_cw_container(arstd_clicks, children):
      Output({'type':'monte-carlo-average-return', 'index':MATCH}, 'disabled'),
      Output({'type':'monte-carlo-standard-deviation', 'index':MATCH}, 'disabled')],
     Input({'type':'monte-carlo-arstd-dropdown', 'index':MATCH}, 'value'),
-    State({'type':'monte-carlo-arstd-dropdown', 'index':MATCH}, 'id'),
+    State({'type':'monte-carlo-arstd-dropdown', 'index':MATCH}, 'id'), # is this necessary? idk
 )
 def update_preset_index(value, id):
     if value is None: 
@@ -481,10 +487,21 @@ def update_preset_index(value, id):
 
     return index_presets.get(value)[0], index_presets.get(value)[1], True, True
 
+# delete asset button
+@callback(
+    Output({'type':'monte-carlo-arstd-row', 'index':MATCH}, 'children'),
+    Input({'type':'monte-carlo-arstd-delete', 'index':MATCH}, 'n_clicks'),
+    State({'type':'monte-carlo-arstd-row', 'index':MATCH}, 'children'),
+)
+def arstd_delete_button(n_clicks, children):
+    if n_clicks != 0:
+        return None
+    return children
+
 # sum asset allocations
 @callback(
     Output('monte-carlo-allocation-sum', 'value'),
-    Input({'type':'monte-carlo-ratio', 'index':ALL}, 'value')
+    Input({'type':'monte-carlo-ratio', 'index':ALL}, 'value'),
 )
 def sum_asset_allocations(asset_allocations):
     sum_allocations = 0

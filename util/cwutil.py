@@ -7,7 +7,9 @@ START_DATE = datetime.today().strftime('%m/%Y')
 
 def create_asset_source(arstd_id, dropdown_menu_items):
 
-    inputgroup = html.Div([
+    inputgroup = html.Div(
+        id={'type':'monte-carlo-arstd-row', 'index':arstd_id}, 
+        children=[
         dcc.Dropdown(
             dropdown_menu_items, 
             id={'type':'monte-carlo-arstd-dropdown', 'index':arstd_id},
@@ -42,7 +44,13 @@ def create_asset_source(arstd_id, dropdown_menu_items):
                 placeholder="Enter Allocation"
             ),
             dbc.InputGroupText("%"),
-        ])
+        ]),
+        dbc.Button(
+            "x",
+            id={'type':'monte-carlo-arstd-delete', 'index':arstd_id},
+            n_clicks=0,
+            color='secondary'
+        )
     ], style={'display':'flex', 'gap':'1vh'})
 
     return inputgroup
