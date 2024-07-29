@@ -463,7 +463,9 @@ def update_cw_container(arstd_clicks, children):
 # Preset indexes
 @callback(
     [Output({'type':'monte-carlo-average-return', 'index':MATCH}, 'value'),
-     Output({'type':'monte-carlo-standard-deviation', 'index':MATCH}, 'value')],
+     Output({'type':'monte-carlo-standard-deviation', 'index':MATCH}, 'value'),
+     Output({'type':'monte-carlo-average-return', 'index':MATCH}, 'disabled'),
+     Output({'type':'monte-carlo-standard-deviation', 'index':MATCH}, 'disabled')],
     Input({'type':'monte-carlo-arstd-dropdown', 'index':MATCH}, 'value'),
     State({'type':'monte-carlo-arstd-dropdown', 'index':MATCH}, 'id'),
 )
@@ -471,7 +473,7 @@ def update_preset_index(value, id):
     if value is None: 
         raise PreventUpdate
 
-    return index_presets.get(value)
+    return index_presets.get(value)[0], index_presets.get(value)[1], True, True
 
 ###############################
 # CONTRIBUTIONS / WITHDRAWALS #
