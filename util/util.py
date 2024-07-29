@@ -78,7 +78,7 @@ def get_vlines_from_figure(figure):
 def update_paragraph(figure, threshold, threshold_type, threshold_direction):
     
 
-    paragraph = f"On average, the portfolio is expected to grow to ${max(figure['data'][-4]['y']):.2f} over {len(figure['data'][-4]['x'])-1} years. The median outcome is slightly lower at ${max(figure['data'][-3]['y']):.2f}, as the average is skewed by a few high-performing simulations. The analysis also shows that the portfolio is likely to be within the range of ${max(figure['data'][-1]['y']):.2f} to ${max(figure['data'][-2]['y']):.2f} with 95% confidence (within two standard deviations)."
+    paragraph = f"On average, the portfolio is expected to grow to ${max(figure['data'][-4]['y']):.2f} over {len(figure['data'][-4]['x'])-1} periods. The median outcome is slightly lower at ${max(figure['data'][-3]['y']):.2f}, as the average is skewed by a few high-performing simulations. The analysis also shows that the portfolio is likely to be within the range of ${max(figure['data'][-1]['y']):.2f} to ${max(figure['data'][-2]['y']):.2f} with 95% confidence (within two standard deviations)."
 
 
     if threshold_direction == "up":
@@ -92,18 +92,18 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
 
     vlines = get_vlines_from_figure(figure)
     if vlines:
-        paragraph += f" This portfolio's {threshold_type} will {direction} ${threshold} in {vlines[0]['x']} years."
+        paragraph += f" This portfolio's {threshold_type} will {direction} ${threshold} in {vlines[0]['x']} periods."
     elif threshold is not None:
         if direction == "reach":
             if threshold > max(max(figure['data'], key=lambda x: x['y'])['y']):
-                paragraph += f" This portfolio will never {direction} ${threshold} in {max(figure['data'][0]['x'])} years."
+                paragraph += f" This portfolio will never {direction} ${threshold} in {max(figure['data'][0]['x'])} periods."
             else:
-                paragraph += f" This portfolio's {threshold_type} will not {direction} ${threshold} in {max(figure['data'][0]['x'])} years."
+                paragraph += f" This portfolio's {threshold_type} will not {direction} ${threshold} in {max(figure['data'][0]['x'])} periods."
         else:
             if threshold < min(min(figure['data'], key=lambda x: x['y'])['y']):
-                paragraph += f" This portfolio will never {direction} ${threshold} in {max(figure['data'][0]['x'])} years."
+                paragraph += f" This portfolio will never {direction} ${threshold} in {max(figure['data'][0]['x'])} periods."
             else:
-                paragraph += f" This portfolio's {threshold_type} will not {direction} ${threshold} in {max(figure['data'][0]['x'])} years."
+                paragraph += f" This portfolio's {threshold_type} will not {direction} ${threshold} in {max(figure['data'][0]['x'])} periods."
 
     if len(figure['data'])-4 < 500:
         paragraph += f" Using too few simulations (currently {len(figure['data'])-4}) can create variable results. Try increasing the number of simulations to increase accuracy."

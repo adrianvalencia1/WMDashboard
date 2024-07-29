@@ -552,7 +552,7 @@ def store_intervals_data(intervals, interval_type,
         # TODO: move to own function
         if interval_type == "y":
             withdrawal_difference_start = math.ceil(withdrawal_start.year - start_date.year)
-            contribution_difference_end = math.ceil(contribution_end.year - start_date.year)
+            withdrawal_difference_end = math.ceil(withdrawal_end.year - start_date.year)
         elif interval_type == "m":
             withdrawal_difference_start = math.ceil((withdrawal_start.year - start_date.year) * 12 + withdrawal_start.month - start_date.month)
             withdrawal_difference_end = math.ceil((withdrawal_end.year - start_date.year) * 12 + withdrawal_end.month - start_date.month)
