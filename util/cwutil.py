@@ -23,7 +23,6 @@ def create_asset_source(arstd_id, dropdown_menu_items):
                 placeholder="Enter Average Return"
             ),
             dbc.InputGroupText("%"),
-            dbc.InputGroupText(" "), # Gap
             dbc.InputGroupText("Standard Deviation"), 
             dbc.Input(
                 id={'type':'monte-carlo-standard-deviation', 'index':arstd_id},
@@ -33,16 +32,16 @@ def create_asset_source(arstd_id, dropdown_menu_items):
                 placeholder="Enter Standard Deviation"
             ),
             dbc.InputGroupText("%"),
-            dbc.InputGroupText(" "), # Gap
-            dbc.InputGroupText("Weight"), 
+            dbc.InputGroupText("Allocation"), 
             dbc.Input(
                 id={'type':'monte-carlo-ratio', 'index':arstd_id},
-                value=100,
+                value=0,
                 min=0,
                 type='number',
                 required=True,
-                placeholder="Enter Weight"
+                placeholder="Enter Allocation"
             ),
+            dbc.InputGroupText("%"),
         ])
     ], style={'display':'flex', 'gap':'1vh'})
 

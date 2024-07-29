@@ -103,7 +103,6 @@ def layout():
                                                     placeholder="Enter Average Return"
                                                 ),
                                                 dbc.InputGroupText("%"),
-                                                dbc.InputGroupText(" "), # Gap
                                                 dbc.InputGroupText("Standard Deviation", id="monte-carlo-standard-deviation"), 
                                                 dbc.Input(
                                                     id={'type':'monte-carlo-standard-deviation', 'index':1},
@@ -113,8 +112,7 @@ def layout():
                                                     placeholder="Enter Standard Deviation"
                                                 ),
                                                 dbc.InputGroupText("%"),
-                                                dbc.InputGroupText(" "), # Gap
-                                                dbc.InputGroupText("Weight", id="monte-carlo-ratio"), 
+                                                dbc.InputGroupText("Allocation", id="monte-carlo-ratio"), 
                                                 dbc.Input(
                                                     id={'type':'monte-carlo-ratio', 'index':1},
                                                     value=100,
@@ -123,14 +121,20 @@ def layout():
                                                     required=True,
                                                     placeholder="Enter Weight"
                                                 ),
+                                                dbc.InputGroupText("%"),
                                             ])
                                         ], style={'display':'flex', 'gap':'1vh'})
                                     ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
                                 ),
-                            ])
+
+                                # ASSET ALLOCATION SUM
+                                dbc.InputGroup([
+                                    dbc.InputGroupText("Total"),
+                                    dbc.Input(id='monte-carlo-allocation-sum', disabled=True, value=100)
+                                ], style={'width':'20vh', 'margin-left':'auto', 'margin-right':'0'})
+
+                            ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'})
                         ),
-                        
-                        
                         
                         # CONTRIBUTION AND WITHDRAWAL
                         html.Div([
@@ -343,8 +347,10 @@ def layout():
             custom_spinner=dbc.Placeholder(animation='glow')
         ) 
         ],style={'padding':'0px 20vh 30px'}),
-
+        
         # TOOLTIPS
+        html.Div([
+        
         dbc.Tooltip(
             "Initial investment in $.",
             target="initial-investment",
@@ -363,7 +369,7 @@ def layout():
             placement="top"
         ),
         dbc.Tooltip(
-            "The weight of an asset. (Weight/Sum of all weights)",
+            "The % of the portfolio allocated to an asset.",
             target="monte-carlo-ratio",
             placement="top"
         ),
@@ -433,7 +439,7 @@ def layout():
             "Line to mark the threshold on.",
             target='monte-carlo-threshold-type',
             placement="top"
-        ),
+        ),])
     ])
     return layout
 
@@ -474,6 +480,29 @@ def update_preset_index(value, id):
         raise PreventUpdate
 
     return index_presets.get(value)[0], index_presets.get(value)[1], True, True
+
+# sum asset allocations
+@callback(
+    Output('monte-carlo-allocation-sum', 'value'),
+    Input({'type':'monte-carlo-ratio', 'index':ALL}, 'value')
+)
+def sum_asset_allocations(asset_allocations):
+    sum_allocations = 0
+    for allocation in asset_allocations:
+        if allocation is None:
+            allocation = 0
+        sum_allocations += allocation
+    return sum_allocations
+
+# check if asset allocation sum is 100
+@callback(
+    Output('monte-carlo-allocation-sum', 'invalid'),
+    Input('monte-carlo-allocation-sum', 'value')
+)
+def asset_allocation_validity(value):
+    if value != 100:
+        return True
+    return False
 
 ###############################
 # CONTRIBUTIONS / WITHDRAWALS #
