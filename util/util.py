@@ -8,6 +8,8 @@ import numpy as np
 from fredapi import Fred
 from scipy.optimize import minimize
 
+INDEX_RETURNS_FILEPATH = r'./data/CovarianceMatrix.xlsx'
+
 # Function to get the x-axis values as an array
 def get_x_axis_values(fig):
     x_values = []
@@ -110,7 +112,6 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
     
     return paragraph
 
-# TODO: Move to util file
 def lighten_hex_color(hex_color, percent):
     # Convert hex to RGB
     hex_color = hex_color.strip("#")
@@ -356,7 +357,7 @@ def normalize_to_percentage(arr):
     total = np.sum(arr)
     if total == 0:
         return np.zeros_like(arr)  # To handle cases where the sum is zero
-    percentage_arr = (arr / total) * 100
+    percentage_arr = (arr / total)
     return percentage_arr
 
 def weighted_average(values, weights):
@@ -368,13 +369,38 @@ def weighted_average(values, weights):
     weighted_sum = sum(v * w for v, w in zip(values, weights))
     return weighted_sum / total_weight
 
-def get_arstd_children(ratios, avg_returns, std_devs):
-    ratios_norm = normalize_to_percentage(ratios)
-    
-    weighted_average_average_returns = weighted_average(avg_returns, ratios_norm)
-    weighted_average_standard_deviations = math.sqrt(weighted_average(np.array(std_devs)*np.array(std_devs), ratios_norm))
+def load_index_returns_data(assets):
+    df = pd.read_excel(INDEX_RETURNS_FILEPATH, sheet_name="Data")
 
-    return weighted_average_average_returns, weighted_average_standard_deviations
+    df_filtered = df[assets]
+
+    return df_filtered
+
+def get_arstd_children(time_interval, asset_names, weights, avg_returns, std_devs):
+    weights_norm = normalize_to_percentage(weights)
+    
+    weighted_average_average_returns = weighted_average(avg_returns, weights_norm)
+
+    try:
+        asset_data = load_index_returns_data(asset_names)
+
+        covariance_matrix = asset_data.cov()
+        variance = np.dot(np.array(weights).T, np.dot(covariance_matrix, weights))
+        
+        if time_interval == "y":
+            variance = np.dot(np.array(weights).T, np.dot(covariance_matrix*12, weights))
+
+        portfolio_standard_deviation = math.sqrt(variance)
+
+    except:
+        portfolio_standard_deviation = math.sqrt(weighted_average(np.array(std_devs)*np.array(std_devs), weights_norm))
+        if time_interval == "m":
+            portfolio_standard_deviation /= math.sqrt(12)
+
+    if time_interval == "m":
+        weighted_average_average_returns /= 12
+    
+    return weighted_average_average_returns, portfolio_standard_deviation
 
 def any_none(arr):
     for i in arr:

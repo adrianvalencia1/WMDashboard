@@ -491,7 +491,7 @@ def update_cw_container(arstd_delete_clicks, arstd_clicks, children):
     inputgroup = []
 
     input_id = callback_context.triggered[0]["prop_id"].split(".")[0]
-    print(input_id)
+
     # delete buttons
     if "index" in input_id:
         if input_id != 'monte-carlo-arstd-container':
@@ -797,6 +797,7 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
 
     return "What do these results mean?", paragraph
 
+
 # Monte Carlo Simulation
 @callback(
     [Output('monte-carlo', 'figure'),
@@ -814,12 +815,13 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
      Input('monte-carlo-cw-data', 'data'),
      Input('monte-carlo-threshold-direction', 'value'),
      Input('monte-carlo-time-interval', 'value'),
+     Input({'type':'monte-carlo-arstd-dropdown', 'index':ALL}, 'value'),
      Input({'type':'monte-carlo-ratio', 'index':ALL}, 'value'),
      Input({'type':'monte-carlo-average-return', 'index':ALL}, 'value'),
      Input({'type':'monte-carlo-standard-deviation', 'index':ALL}, 'value')],
     
 )
-def update_monte_carlo(simulations, years, n_clicks, initial_investment, threshold_input, threshold_type, cw_children, cw_array, threshold_direction, time_interval, ratios, avg_rets, std_devs):    
+def update_monte_carlo(simulations, years, n_clicks, initial_investment, threshold_input, threshold_type, cw_children, cw_array, threshold_direction, time_interval, asset_names, ratios, avg_rets, std_devs):    
     df = None
     datatable_columns = None
     style_data_conditional =[]
@@ -832,7 +834,7 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, thresho
     if n_clicks != 0:
         
         # Averaging out stddevs and avg returns
-        avg_temp, standard_deviation_temp = u.get_arstd_children(ratios, avg_rets, std_devs)
+        avg_temp, standard_deviation_temp = u.get_arstd_children(time_interval, asset_names, ratios, avg_rets, std_devs)
         avg = avg_temp/100
         standard_deviation = standard_deviation_temp/100
 
@@ -843,8 +845,7 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, thresho
             current_year = current_year.strftime("%Y-%m")
             date_range = pd.date_range(start=current_year, end=end_period, freq='MS')
             x_range = [date.strftime("%Y-%m") for date in date_range]
-            avg /= 12
-            standard_deviation /= math.sqrt(12)
+            
         elif time_interval == "y":
             current_year = datetime.now().year
             x_range = [current_year+i for i in range(years+1)]
