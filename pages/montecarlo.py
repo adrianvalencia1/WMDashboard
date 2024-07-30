@@ -167,67 +167,90 @@ def layout():
                                             ),
                                         ], style={'display':'flex', 'gap':'1vh'}),
                                         # CONTRIBUTION
-                                        dbc.InputGroup(
-                                            id={'type':'monte-carlo-contribution-igcontainer', 'index': 1},
-                                            children=[ # Contribution inputs
-                                            dbc.InputGroupText("Contribution", id='monte-carlo-contribution-input'),
-                                            dbc.InputGroupText("$"), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-contribution-input', 'index': 1},
-                                                value=0,
-                                                min=0,
-                                                type='number',
-                                                placeholder="Contribution"
-                                            ),
-                                            dbc.InputGroupText("Start", id='monte-carlo-contribution-start'), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-contribution-start', 'index': 1},
-                                                value=START_DATE,
-                                                type='text',
-                                                placeholder="Start Interval",
-                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
-                                            ),
-                                            dbc.InputGroupText("End", id='monte-carlo-contribution-end'), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-contribution-end', 'index': 1},
-                                                value=START_DATE,
-                                                type='text',
-                                                placeholder="End Interval",
-                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
-                                            )]
+                                        html.Div(
+                                            id={'type':'monte-carlo-row', 'index':1}, 
+                                            children=[
+                                                dbc.InputGroup(
+                                                    id={'type':'monte-carlo-contribution-igcontainer', 'index': 1},
+                                                    children=[ # Contribution inputs
+                                                        dbc.InputGroupText("Contribution", id='monte-carlo-contribution-input'),
+                                                        dbc.InputGroupText("$"), 
+                                                        dbc.Input(
+                                                            id={'type':'monte-carlo-contribution-input', 'index': 1},
+                                                            value=0,
+                                                            min=0,
+                                                            type='number',
+                                                            placeholder="Contribution"
+                                                        ),
+                                                        dbc.InputGroupText("Start", id='monte-carlo-contribution-start'), 
+                                                        dbc.Input(
+                                                            id={'type':'monte-carlo-contribution-start', 'index': 1},
+                                                            value=START_DATE,
+                                                            type='text',
+                                                            placeholder="Start Interval",
+                                                            pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                                        ),
+                                                        dbc.InputGroupText("End", id='monte-carlo-contribution-end'), 
+                                                        dbc.Input(
+                                                            id={'type':'monte-carlo-contribution-end', 'index': 1},
+                                                            value=START_DATE,
+                                                            type='text',
+                                                            placeholder="End Interval",
+                                                            pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                                        )
+                                                    ]
+                                                ),
+                                                dbc.Button(
+                                                    "x",
+                                                    id={'type':'monte-carlo-delete', 'index':1},
+                                                    n_clicks=0,
+                                                    color='secondary'
+                                                )
+                                            ], style={'display':'flex','gap':'1vh'}
                                         ),
                                         # WITHDRAWAL
-                                        dbc.InputGroup(
-                                            id={'type':'monte-carlo-withdrawal-igcontainer', 'index':2},
-                                            children=[ # Withdrawal inputs
-                                            dbc.InputGroupText("Withdrawal", id='monte-carlo-withdrawal-input'),
-                                            dbc.InputGroupText("$"), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-withdrawal-input', 'index': 2},
-                                                value=0,
-                                                min=0,
-                                                type='number',
-                                                placeholder="Withdrawal"
-                                            ),
-                                            dbc.InputGroupText("Start", id='monte-carlo-withdrawal-start'), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-withdrawal-start', 'index': 2},
-                                                value=START_DATE,
-                                                type='text',
-                                                placeholder="Start Interval",
-                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
-                                            ),
-                                            dbc.InputGroupText("End", id='monte-carlo-withdrawal-end'), 
-                                            dbc.Input(
-                                                id={'type':'monte-carlo-withdrawal-end', 'index': 2},
-                                                value=START_DATE,
-                                                type='text',
-                                                placeholder="End Interval",
-                                                pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
-                                            )]
+                                        html.Div(
+                                            id={'type':'monte-carlo-row', 'index':2}, 
+                                            children=[
+                                                dbc.InputGroup(
+                                                    id={'type':'monte-carlo-withdrawal-igcontainer', 'index':2},
+                                                    children=[ # Withdrawal inputs
+                                                        dbc.InputGroupText("Withdrawal", id='monte-carlo-withdrawal-input'),
+                                                        dbc.InputGroupText("$"), 
+                                                        dbc.Input(
+                                                            id={'type':'monte-carlo-withdrawal-input', 'index': 2},
+                                                            value=0,
+                                                            min=0,
+                                                            type='number',
+                                                            placeholder="Withdrawal"
+                                                        ),
+                                                        dbc.InputGroupText("Start", id='monte-carlo-withdrawal-start'), 
+                                                        dbc.Input(
+                                                            id={'type':'monte-carlo-withdrawal-start', 'index': 2},
+                                                            value=START_DATE,
+                                                            type='text',
+                                                            placeholder="Start Interval",
+                                                            pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                                        ),
+                                                        dbc.InputGroupText("End", id='monte-carlo-withdrawal-end'), 
+                                                        dbc.Input(
+                                                            id={'type':'monte-carlo-withdrawal-end', 'index': 2},
+                                                            value=START_DATE,
+                                                            type='text',
+                                                            placeholder="End Interval",
+                                                            pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
+                                                        )
+                                                    ]
+                                                ),
+                                                dbc.Button(
+                                                    "x",
+                                                    id={'type':'monte-carlo-delete', 'index':2},
+                                                    n_clicks=0,
+                                                    color='secondary'
+                                                )
+                                            ], style={'display':'flex','gap':'1vh'}
                                         )
-                                    ], 
-                                    style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
+                                    ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'}
                                 ),
                             ])
                         ),
@@ -456,19 +479,33 @@ def layout():
 # add asset button
 @callback(
     Output('monte-carlo-arstd-container', 'children'),
-    Input('monte-carlo-add-arstd', 'n_clicks'),
+    [Input({'type':'monte-carlo-arstd-delete', 'index':ALL}, 'n_clicks'),
+     Input('monte-carlo-add-arstd', 'n_clicks'),],
     State('monte-carlo-arstd-container', 'children')
 )
-def update_cw_container(arstd_clicks, children):
+def update_cw_container(arstd_delete_clicks, arstd_clicks, children):
     if arstd_clicks == 0:
         raise PreventUpdate
     
     num_children = len(children) # used to name the ids
     inputgroup = []
 
-    if 'monte-carlo-add-arstd' == ctx.triggered_id:
-        inputgroup = cw.create_asset_source(num_children, dropdown_menu_items)
-    children += [inputgroup]
+    input_id = callback_context.triggered[0]["prop_id"].split(".")[0]
+    print(input_id)
+    # delete buttons
+    if "index" in input_id:
+        if input_id != 'monte-carlo-arstd-container':
+            input_id = eval(input_id)
+            id_delete = input_id
+            id_delete['type'] = "monte-carlo-arstd-row"
+            for row in children:
+                if row.get('props').get('id') == id_delete:
+                    children.remove(row)
+    # add buttons
+    else:
+        if 'monte-carlo-add-arstd' == ctx.triggered_id:
+            inputgroup = cw.create_asset_source(num_children, dropdown_menu_items)
+        children += [inputgroup]
         
     return children
 
@@ -486,17 +523,6 @@ def update_preset_index(value, id):
         raise PreventUpdate
 
     return index_presets.get(value)[0], index_presets.get(value)[1], True, True
-
-# delete asset button
-@callback(
-    Output({'type':'monte-carlo-arstd-row', 'index':MATCH}, 'children'),
-    Input({'type':'monte-carlo-arstd-delete', 'index':MATCH}, 'n_clicks'),
-    State({'type':'monte-carlo-arstd-row', 'index':MATCH}, 'children'),
-)
-def arstd_delete_button(n_clicks, children):
-    if n_clicks != 0:
-        return None
-    return children
 
 # sum asset allocations
 @callback(
@@ -542,7 +568,7 @@ def validate_contribution_input(value):
 def validate_withdrawal_input(value):
     if value is None:
         return True
-    
+
 # store contributions and withdrawal data
 @callback(
     [Output('monte-carlo-cw-data', 'data')],
@@ -610,7 +636,6 @@ def store_intervals_data(intervals, interval_type,
                 cw_array[interval] -= withdrawal_arr[withdrawal]
 
     return [cw_array]
-
 
 # validate withdrawal end inputs
 @callback(
@@ -680,26 +705,40 @@ def update_time_period_validity(max_value, value, pattern):
     else:
         return False
 
-# add contributions and withdrawals source button
+# add contributions/withdrawals button and delete
 @callback(
     Output('monte-carlo-cw-container', 'children'),
-    [Input('monte-carlo-add-c', 'n_clicks'),
+    [Input({'type':'monte-carlo-delete', 'index':ALL}, 'n_clicks'),
+     Input('monte-carlo-add-c', 'n_clicks'),
      Input('monte-carlo-add-w', 'n_clicks'),
      Input('monte-carlo-time-periods', 'value'),],
     State('monte-carlo-cw-container', 'children')
 )
-def update_cw_container(nc, nw, time_periods, children):
+def update_cw_container(c_delete_click, nc, nw, time_periods, children):
     if nw == 0 and nc == 0:
         raise PreventUpdate
     
     num_children = len(children) # used to name the ids
     inputgroup = []
 
-    if 'monte-carlo-add-c' == ctx.triggered_id:
-        inputgroup = cw.create_cw_source(num_children, time_periods, "Contribution")
-    elif 'monte-carlo-add-w' == ctx.triggered_id:
-        inputgroup = cw.create_cw_source(num_children, time_periods, "Withdrawal")
-    children += [inputgroup]
+    input_id = callback_context.triggered[0]["prop_id"].split(".")[0]
+    
+    # delete buttons
+    if "index" in input_id:
+        if input_id != 'monte-carlo-cw-container':
+            input_id = eval(input_id)
+            id_delete = input_id
+            id_delete['type'] = "monte-carlo-row"
+            for row in children:
+                if row.get('props').get('id') == id_delete:
+                    children.remove(row)
+    # add buttons
+    else:
+        if 'monte-carlo-add-c' == ctx.triggered_id:
+            inputgroup = cw.create_cw_source(num_children, time_periods, "Contribution")   
+        elif 'monte-carlo-add-w' == ctx.triggered_id:
+            inputgroup = cw.create_cw_source(num_children, time_periods, "Withdrawal")
+        children += [inputgroup]
 
     return children
 
