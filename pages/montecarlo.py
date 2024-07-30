@@ -472,6 +472,19 @@ def layout():
     ])
     return layout
 
+######################
+# INITIAL INVESTMENT #
+######################
+
+@callback(
+    Output('initial-investment', 'invalid'),
+    Input('initial-investment', 'value')
+)
+def initial_investment_invalid(value):
+    if value is None:
+        return True
+    return False
+
 #################################
 # ASSETS (AVG. RETURN / STDDEV) #
 #################################
@@ -797,6 +810,36 @@ def update_paragraph(figure, threshold, threshold_type, threshold_direction):
 
     return "What do these results mean?", paragraph
 
+# disable run button if any field is invalid
+@callback(
+    Output('monte-carlo-button', 'disabled', allow_duplicate=True),
+    [Input('initial-investment', 'invalid'),
+     Input('monte-carlo-allocation-sum', 'invalid'),
+     Input('monte-carlo-arstd-container', 'children'),
+     Input({'type':'monte-carlo-contribution-input', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-contribution-start', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-contribution-end', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-withdrawal-input', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-withdrawal-start', 'index': ALL}, 'invalid'),
+     Input({'type':'monte-carlo-withdrawal-end', 'index': ALL}, 'invalid'),
+     Input('monte-carlo-time-periods', 'invalid')],
+    prevent_initial_call=True
+)
+def disable_run_simulation_button(initial_investment_invalid, 
+                                  asset_allocation_sum_invalid, arstd_children,
+                                  contribution_input_invalid, contribution_start_invalid, contribution_end_invalid, 
+                                  withdrawal_input_invalid, withdrawal_start_invalid, withdrawal_end_invalid, 
+                                  end_date_invalid):
+    disable = False
+    if initial_investment_invalid:
+        disable = True
+    if asset_allocation_sum_invalid or len(arstd_children) <= 1:
+        disable = True
+    if any([any(contribution_input_invalid), any(contribution_start_invalid), any(contribution_end_invalid), any(withdrawal_input_invalid), any(withdrawal_start_invalid), any(withdrawal_end_invalid)]):
+        disable = True
+    if end_date_invalid:
+        disable = True
+    return disable
 
 # Monte Carlo Simulation
 @callback(
