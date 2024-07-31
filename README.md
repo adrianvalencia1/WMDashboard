@@ -46,8 +46,12 @@ To run this dashboard locally, follow these steps:
 WMDashboard/
 │
 ├── app.py
+├── navbar.py
+├── requirements.txt
+├── tickers_array.npy
 ├── data/
-│   └── sample_data.csv
+│   └── IndexPresets.xlsx
+│   └── CovarianceMatrix.xlsx
 ├── README.md
 ├── requirements.txt
 ├── utils/
@@ -63,7 +67,7 @@ WMDashboard/
 ```
 
 - `app.py`: The main application file.
-- `data/`: Contains data files.
+- `data/`: Contains configurable data files.
 - `utils/`: Contains utility functions for data processing.
 - `pages/`: Contains layout and callback definitions for the Dash application.
 
