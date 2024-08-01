@@ -1,4 +1,4 @@
-"""from dash import html, register_page
+from dash import html, register_page
 import dash
 from dash import Dash, dcc, html, ctx
 import numpy as np
@@ -416,4 +416,4 @@ def update_graph(value, date_value, dataset_name, management_fee, checklist, con
     else:
         fig = g.create_plot_test(value, data, dataset_name, management_fee=management_fee, dividends=dividends, color_mode='continuous')
         percent_fig = g.create_plot_percent(1, data, dataset_name, management_fee=0)
-    return fig, percent_fig"""
+    return fig, percent_fig
