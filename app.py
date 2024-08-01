@@ -1,3 +1,4 @@
+import os
 from dash import html, dcc, Dash, page_container
 import dash_bootstrap_components as dbc
 from navbar import create_navbar
@@ -21,4 +22,4 @@ app.layout = html.Div([
 server = app.server
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=False, port=os.getenv("PORT", default=5000))
