@@ -22,7 +22,7 @@ COPY . .
 
 ENV FLASK_APP=app.py
 
-RUN BACKGROUND flask run --host 0.0.0.0
+RUN BACKGROUND flask run --host localhost
 EXPOSE WEBSITE http://localhost:5000
 
 # Expose the webserver in the staging server as a secure link.
