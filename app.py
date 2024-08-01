@@ -13,7 +13,7 @@ app = Dash(
 )
 
 app.layout = html.Div([
-    html.Div([NAVBAR]),
+    NAVBAR,
     page_container
 ])
 

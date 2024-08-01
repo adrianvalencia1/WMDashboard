@@ -9,19 +9,19 @@ def create_navbar():
             dbc.NavItem(dbc.NavLink("Home", href="/")),
             dbc.NavItem(dbc.NavLink("Monte Carlo Simulation", href="/monte-carlo-simulation")),
             dbc.NavItem(dbc.NavLink("Portfolio Optimization", href="/portfolio-optimization"))
-        ],
-        brand=dbc.Container([
-                html.A(
-                    dbc.Row([
-                        dbc.Col(html.Img(src=LOGO, height="57px")),
-                    ]),
-                    href="https://satovsky.com",
-                )], 
-                style={'margin':'0'}
-            ),
-        color="dark",
-        dark=True,
-        style={'margin':'0'}
+        ]
+        #brand=dbc.Container([
+        #        html.A(
+        #            dbc.Row([
+        #                dbc.Col(html.Img(src=LOGO, height="57px")),
+        #            ]),
+        #            href="https://satovsky.com",
+        #        )], 
+        #        style={'margin':'0'}
+        #    ),
+        #color="dark",
+        #dark=True,
+        #style={'margin':'0'}
     )
     
     return navbar
