@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 LOGO = "https://www.satovsky.com/wp-content/uploads/2020/10/satovsky-new-logo.png"
 
 def create_navbar():
-    navbar = [dbc.NavbarSimple(
+    navbar = dbc.NavbarSimple(
         children=[
             dbc.NavItem(dbc.NavLink("Home", href="/")),
             dbc.NavItem(dbc.NavLink("Monte Carlo Simulation", href="/monte-carlo-simulation")),
@@ -22,6 +22,6 @@ def create_navbar():
         color="dark",
         dark=True,
         style={'margin':'0'}
-    )]
+    )
     
     return navbar
