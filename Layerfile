@@ -20,10 +20,9 @@ RUN pip3 install -r /root/requirements.txt
 # This line copies the repository to /root in the runner
 COPY . .
 
-EXPOSE 5000
 ENV FLASK_APP=app.py
 
-RUN BACKGROUND flask run --host 0.0.0.0:5000
+RUN BACKGROUND flask run --host 0.0.0.0
 EXPOSE WEBSITE http://localhost:5000
 # Expose the webserver in the staging server as a secure link.
 # Whenever someone clicks the link, we'll load this staging server and forward
