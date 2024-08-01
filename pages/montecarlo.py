@@ -31,10 +31,6 @@ register_page(
 )
 
 def layout():
-
-    
-    
-
     layout = html.Div([
     # TITLE
     html.Div([
