@@ -164,7 +164,7 @@ def create_plot(starting_amount, data, title, management_fee=0, inflation_data=F
             title = f'Growth of ${starting_amount:,}'
         )
     )
-    fig.add_annotation(x=growth_df.index[-1], y=growth_df['Amount'][-1], text=f'<b>${growth_df['Amount'][-1]:,.2f}',showarrow=True, arrowhead=2)
+    fig.add_annotation(x=growth_df.index[-1], y=growth_df['Amount'][-1], text=f"<b>${growth_df['Amount'][-1]:,.2f}",showarrow=True, arrowhead=2)
     return fig
 
 
