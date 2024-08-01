@@ -7,3 +7,4 @@ plotly
 python_dateutil
 scipy
 yfinance
+gunicorn

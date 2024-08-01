@@ -19,8 +19,7 @@ def create_navbar():
                 )], style={'margin':'0'}
             ),
         color="dark",
-        dark=True,
-        style={'margin':'0'}
+        dark=True
     )
     
     return navbar
