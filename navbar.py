@@ -1,7 +1,7 @@
 from dash import html
 import dash_bootstrap_components as dbc
 
-LOGO = "https://www.satovsky.com/wp-content/uploads/2020/10/satovsky-new-logo.png"
+#LOGO = "https://www.satovsky.com/wp-content/uploads/2020/10/satovsky-new-logo.png"
 
 def create_navbar():
     navbar = dbc.NavbarSimple(
