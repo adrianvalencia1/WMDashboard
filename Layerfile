@@ -20,9 +20,9 @@ RUN pip3 install -r /root/requirements.txt
 # This line copies the repository to /root in the runner
 COPY . .
 
-ENV FLASK_APP=app.py
+ENV FLASK_APP=app.py flask run --host=localhost
 
-RUN BACKGROUND flask run --host localhost --disable-host-check
+RUN BACKGROUND flask run --host localhost
 EXPOSE WEBSITE http://localhost:5000
 
 # Expose the webserver in the staging server as a secure link.
