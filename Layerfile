@@ -22,8 +22,8 @@ COPY . .
 
 ENV FLASK_APP=app.py
 
-RUN BACKGROUND flask run --host 0.0.0.0:5000
-EXPOSE WEBSITE http://127.0.0.1:5000
+RUN BACKGROUND flask run --host 0.0.0.0
+EXPOSE WEBSITE 5000
 # Expose the webserver in the staging server as a secure link.
 # Whenever someone clicks the link, we'll load this staging server and forward
 # their requests to it.
