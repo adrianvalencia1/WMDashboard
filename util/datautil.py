@@ -1,5 +1,4 @@
 import pandas as pd
-from pathlib import Path
 
 INDEX_PRESETS_FILEPATH = r'./data/IndexPresets.xlsx'
 

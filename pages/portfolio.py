@@ -27,17 +27,17 @@ initial_amount = 1
 # Inflation data
 # TODO: relative file paths
 pd.set_option('future.no_silent_downcasting', True)
-inflation_filepath = r"C:\Users\Adrian(SatovskyAsset\Desktop\Projects\IFA\SeriesReport-20240610103427_33cb36.xlsx"
+inflation_filepath = r"./Returns Data/SeriesReport-20240610103427_33cb36.xlsx"
 datasets = {}
-filepath = r"C:\\Users\\Adrian(SatovskyAsset\\Desktop\\Projects\\IFA\\Returns Data\\DFA_PeriodicReturns_20240604135057.xlsx"
+filepath = r"./Returns Data/DFA_PeriodicReturns_20240604135057.xlsx"
 g.read_returns_data(filepath, "Dimensional US Small Cap Index", datasets)
-filepath = r"C:\\Users\\Adrian(SatovskyAsset\\Desktop\\Projects\\IFA\\Returns Data\\DFA_PeriodicReturns_20240613153633.xlsx"
+filepath = r"./Returns Data/DFA_PeriodicReturns_20240613153633.xlsx"
 g.read_returns_data(filepath, "Russell 3000 Index", datasets)
-filepath = r"C:\Users\Adrian(SatovskyAsset\Desktop\Projects\IFA\Returns Data\DFA_PeriodicReturns_20240613153909.xlsx"
+filepath = r"./Returns Data/DFA_PeriodicReturns_20240613153909.xlsx"
 g.read_returns_data(filepath, "S&P 500 Index", datasets)
-filepath = r"C:\Users\Adrian(SatovskyAsset\Desktop\Projects\IFA\Returns Data\DFA_PeriodicReturns_20240613154022.xlsx"
+filepath = r"./Returns Data/DFA_PeriodicReturns_20240613154022.xlsx"
 g.read_returns_data(filepath, "US High Relative Profitability Portfolio", datasets)
-filepath = r"C:\\Users\\Adrian(SatovskyAsset\\Desktop\\Projects\\IFA\\Returns Data\\DFA_PeriodicReturns_20240604115746.xlsx"
+filepath = r"./Returns Data/DFA_PeriodicReturns_20240604115746.xlsx"
 g.read_returns_data_market_index(filepath, datasets)
 fig = g.create_plot(1, list(datasets.values())[0], list(datasets.keys())[0], 0, dividends=[])
 percent_fig = g.create_plot_percent(1, list(datasets.values())[0], list(datasets.keys())[0], 0)
