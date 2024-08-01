@@ -7,8 +7,7 @@ FROM vm/ubuntu:18.04
 RUN apt-get update && apt-get install -y python3 python3-pip
 
 # Install dependencies from requirements.txt
-COPY requirements.txt /root/requirements.txt
-RUN pip3 install -r /root/requirements.txt
+RUN pip3 install -r requirements.txt
 
 # Create some files
 #RUN echo '<b>some html</b>' > hello.html
@@ -19,10 +18,12 @@ RUN pip3 install -r /root/requirements.txt
 
 # This line copies the repository to /root in the runner
 COPY . .
-RUN ls
+EXPOSE 80
+ENV FLASK_APP=app.py
 
+CMD ["flask", "run", "--host", "0.0.0.0"]
 # Expose the webserver in the staging server as a secure link.
 # Whenever someone clicks the link, we'll load this staging server and forward
 # their requests to it.
-RUN BACKGROUND python3 app.py
-EXPOSE WEBSITE http://localhost:80
+#RUN BACKGROUND python3 app.py
+#EXPOSE WEBSITE http://localhost:80
