@@ -1088,11 +1088,11 @@ def update_monte_carlo(simulations, years, n_clicks, initial_investment, thresho
         fig.add_trace(go.Scatter(x=x_range, y=percentile_5_values, name='5th Percentile', text=returns_text_percentile_5_c, line=dict(width=3), legendrank=4, marker_color=colors[3]))
         
         # Fig styling
-        text = "<br>".join(["<b>Year</b>: %{x}","<b>Value</b>: $%{y:.2f}","<b>Return</b>: %{text:.2f}%"])
+        text = "<br>".join(["<b>Year</b>: %{x}","<b>Value</b>: $%{y:,.2f}","<b>Return</b>: %{text:.2f}%"])
         fig.update_traces(showlegend=True, mode='lines', hovertemplate=text)
         fig.update_xaxes(title_text="Year")
         fig.update_yaxes(title_text=f"Growth of ${initial_investment:,}")
-        fig.update_layout(hovermode="x")
+        fig.update_layout(hovermode="x", hoverlabel=dict(font_size=16))
         fig.add_hline(y=initial_investment, line_dash="dot",
               annotation_text=f"${initial_investment}", 
               annotation_position="bottom left",
