@@ -411,11 +411,21 @@ def layout():
             custom_spinner=html.H2(["Running Simulation  ", dbc.Spinner(color="primary")]),
         ),
         
-        dash_table.DataTable(id='data-table', columns=None, data=None, style_cell={
-            'font-family': 'Arial, sans-serif',  # Set font family
-            'fontSize': '16px',  # Set font size
-            'textAlign': 'center',  # Set text alignment
-        },),
+        dash_table.DataTable(
+            id='data-table', 
+            columns=None, 
+            data=None, 
+            cell_selectable=False, 
+            style_cell={
+                'font-family': 'Arial, sans-serif',  # Set font family
+                'fontSize': '16px',  # Set font size
+                'textAlign': 'center',  # Set text alignment
+            },
+            style_table={
+                'maxHeight': '400px',  # Set a fixed height
+                'overflowY': 'auto'  # Enable vertical scrolling
+            },
+        ),
         dcc.Loading(
             id='load-monte-carlo-graph-info',
             children=html.Div([
