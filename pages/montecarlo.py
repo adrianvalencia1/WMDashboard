@@ -3,7 +3,7 @@ import math
 import re
 import time
 import util.util as u
-from dash import dcc, html, dash_table, ctx, callback, register_page, callback_context, MATCH, ALL
+from dash import dcc, html, dash_table, ctx, callback, clientside_callback, register_page, callback_context, MATCH, ALL
 import numpy as np
 from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
@@ -438,7 +438,7 @@ def layout():
             custom_spinner=dbc.Placeholder(animation='glow')
         ) 
         ],style={'padding':'0px 20vh 30px'}),
-        
+
         # TOOLTIPS
         html.Div([
         
@@ -514,6 +514,11 @@ def layout():
             target="monte-carlo-simulations-label",
             placement="bottom"
         ),
+        dbc.Tooltip(
+            "Yearly/monthly inflation rate. The inflation rate will affect contribution or withdrawal sources that have 'adjust for inflation' enabled.",
+            target="monte-carlo-inflation-label",
+            placement="bottom"
+        ),
 
         # THRESHOLD TOOLTIPS
         dbc.Tooltip(
@@ -531,7 +536,7 @@ def layout():
             target='monte-carlo-threshold-type',
             placement="top"
         ),])
-    ])
+    ], style={"padding-bottom": "10vh"})
     return layout
 
 ######################
