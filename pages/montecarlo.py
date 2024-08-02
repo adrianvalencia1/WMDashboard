@@ -66,7 +66,7 @@ def layout():
                                 type='number',
                                 placeholder="Initial Investment"
                             ),
-                        ]),
+                        ], style={'width':'30%'}),
 
                         # AVERAGE RETURN / STANDARD DEVIATION
                         dbc.Card(
@@ -169,6 +169,15 @@ def layout():
                                                 dbc.InputGroup(
                                                     id={'type':'monte-carlo-contribution-igcontainer', 'index': 1},
                                                     children=[ # Contribution inputs
+                                                        dbc.Select(
+                                                            id={'type':'monte-carlo-contribution-interval', 'index': 1},
+                                                            options=[
+                                                                {"label":"Monthly", "value":"m"},
+                                                                {"label":"Yearly", "value":"y"},
+                                                                {"label":"Lump Sum", "value":"l"},
+                                                            ],
+                                                            value="m"
+                                                        ),
                                                         dbc.InputGroupText("Contribution", id='monte-carlo-contribution-input'),
                                                         dbc.InputGroupText("$"), 
                                                         dbc.Input(
@@ -177,6 +186,14 @@ def layout():
                                                             min=0,
                                                             type='number',
                                                             placeholder="Contribution"
+                                                        ),
+                                                        dbc.InputGroupText(
+                                                            dbc.Switch(
+                                                                id={'type':'monte-carlo-contribution-inflation', 'index': 1},
+                                                                label="Adjust for inflation",
+                                                                value=False,
+                                                                style={"height":"2vh"}                                                       
+                                                            )
                                                         ),
                                                         dbc.InputGroupText("Start", id='monte-carlo-contribution-start'), 
                                                         dbc.Input(
@@ -189,7 +206,7 @@ def layout():
                                                         dbc.InputGroupText("End", id='monte-carlo-contribution-end'), 
                                                         dbc.Input(
                                                             id={'type':'monte-carlo-contribution-end', 'index': 1},
-                                                            value=START_DATE,
+                                                            value=RUN_UNTIL_DATE,
                                                             type='text',
                                                             placeholder="End Interval",
                                                             pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
@@ -213,6 +230,15 @@ def layout():
                                                 dbc.InputGroup(
                                                     id={'type':'monte-carlo-withdrawal-igcontainer', 'index':2},
                                                     children=[ # Withdrawal inputs
+                                                        dbc.Select(
+                                                            id={'type':'monte-carlo-withdrawal-interval', 'index': 2},
+                                                            options=[
+                                                                {"label":"Monthly", "value":"m"},
+                                                                {"label":"Yearly", "value":"y"},
+                                                                {"label":"Lump Sum", "value":"l"},
+                                                            ],
+                                                            value="m"
+                                                        ),
                                                         dbc.InputGroupText("Withdrawal", id='monte-carlo-withdrawal-input'),
                                                         dbc.InputGroupText("$"), 
                                                         dbc.Input(
@@ -221,6 +247,14 @@ def layout():
                                                             min=0,
                                                             type='number',
                                                             placeholder="Withdrawal"
+                                                        ),
+                                                        dbc.InputGroupText(
+                                                            dbc.Switch(
+                                                                id={'type':'monte-carlo-withdrawal-inflation', 'index': 2},
+                                                                label="Adjust for inflation",
+                                                                value=False,
+                                                                style={"height":"2vh"}                                                       
+                                                            )
                                                         ),
                                                         dbc.InputGroupText("Start", id='monte-carlo-withdrawal-start'), 
                                                         dbc.Input(
@@ -233,7 +267,7 @@ def layout():
                                                         dbc.InputGroupText("End", id='monte-carlo-withdrawal-end'), 
                                                         dbc.Input(
                                                             id={'type':'monte-carlo-withdrawal-end', 'index': 2},
-                                                            value=START_DATE,
+                                                            value=RUN_UNTIL_DATE,
                                                             type='text',
                                                             placeholder="End Interval",
                                                             pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
@@ -279,8 +313,8 @@ def layout():
                                 value=f"{START_DATE}",
                                 disabled=True
                             ),
-                            dbc.InputGroupText("End", id="monte-carlo-time-end"),
                             # TIME PERIODS
+                            dbc.InputGroupText("End", id="monte-carlo-time-end"),
                             dbc.Input(
                                 id='monte-carlo-time-periods',
                                 value=RUN_UNTIL_DATE,
@@ -290,7 +324,6 @@ def layout():
                                 pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b",
                                 debounce=True
                             ),
-
                             # SIMULATIONS
                             dbc.InputGroupText("Simulations", id='monte-carlo-simulations-label'), 
                             dbc.Input(
@@ -302,7 +335,26 @@ def layout():
                                 placeholder="Simulations",
                                 disabled=True
                             ),
-                        ]),                  
+                        ]),   
+                        dcc.Store(id='monte-carlo-inflation-data'),               
+                        dbc.InputGroup([
+                            dbc.Select(
+                                id='monte-carlo-inflation-interval',
+                                options=[
+                                    {"label": "Monthly", "value": "m"},
+                                    {"label": "Yearly", "value": "y"}
+                                ],
+                                value="y",
+                            ),
+                            dbc.InputGroupText("Inflation Rate", id="monte-carlo-inflation-label"),
+                            dbc.Input(
+                                id='monte-carlo-inflation',
+                                value=0,
+                                step=0.1,
+                                type='number'
+                            ),
+                            dbc.InputGroupText("%")
+                        ], style={'width':'30%'})
                     ], style={'display':'flex', 'flex-direction':'column', 'gap':'1vh'})
                 ),
             ]),
@@ -564,6 +616,32 @@ def asset_allocation_validity(value):
 # CONTRIBUTIONS / WITHDRAWALS #
 ###############################
 
+# lump sum contribution disable end date
+@callback(
+    [Output({'type':'monte-carlo-contribution-end', 'index':MATCH}, 'disabled'),
+     Output({'type':'monte-carlo-contribution-end', 'index':MATCH}, 'value')],
+    [Input({'type':'monte-carlo-contribution-interval', 'index':MATCH}, 'value'),
+     Input({'type':'monte-carlo-contribution-start', 'index':MATCH}, 'value'),
+     Input({'type':'monte-carlo-contribution-end', 'index':MATCH}, 'value')]
+)
+def lump_sum_c_disable_end(interval, start, end):
+    if interval == "l":
+        return True, start
+    return False, end
+
+# lump sum withdrawal disable end date
+@callback(
+    [Output({'type':'monte-carlo-withdrawal-end', 'index':MATCH}, 'disabled'),
+     Output({'type':'monte-carlo-withdrawal-end', 'index':MATCH}, 'value')],
+    [Input({'type':'monte-carlo-withdrawal-interval', 'index':MATCH}, 'value'),
+     Input({'type':'monte-carlo-withdrawal-start', 'index':MATCH}, 'value'),
+     Input({'type':'monte-carlo-withdrawal-end', 'index':MATCH}, 'value')]
+)
+def lump_sum_w_disable_end(interval, start, end):
+    if interval == "l":
+        return True, start
+    return False, end
+
 # validate contribution input
 @callback(
     Output({'type':'monte-carlo-contribution-input', 'index': MATCH}, 'invalid'),
@@ -587,10 +665,15 @@ def validate_withdrawal_input(value):
     [Output('monte-carlo-cw-data', 'data')],
     [Input('monte-carlo-intervals-data', 'data'),
      Input('monte-carlo-time-interval', 'value'),
+     Input('monte-carlo-inflation-data', 'data'),
+     Input({'type':'monte-carlo-contribution-interval', 'index': ALL}, 'value'),
      Input({'type':'monte-carlo-contribution-input', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-contribution-inflation', 'index': ALL}, 'value'),
      Input({'type':'monte-carlo-contribution-start', 'index': ALL}, 'value'),
      Input({'type':'monte-carlo-contribution-end', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-withdrawal-interval', 'index': ALL}, 'value'),
      Input({'type':'monte-carlo-withdrawal-input', 'index': ALL}, 'value'),
+     Input({'type':'monte-carlo-withdrawal-inflation', 'index': ALL}, 'value'),
      Input({'type':'monte-carlo-withdrawal-start', 'index': ALL}, 'value'), 
      Input({'type':'monte-carlo-withdrawal-end', 'index': ALL}, 'value'),
      Input({'type':'monte-carlo-contribution-input', 'index': ALL}, 'invalid'),
@@ -600,9 +683,9 @@ def validate_withdrawal_input(value):
      Input({'type':'monte-carlo-withdrawal-start', 'index': ALL}, 'invalid'),
      Input({'type':'monte-carlo-withdrawal-end', 'index': ALL}, 'invalid'),]
 )
-def store_intervals_data(intervals, interval_type,
-                         contribution_arr, contribution_start_arr, contribution_end_arr, 
-                         withdrawal_arr, withdrawal_start_arr, withdrawal_end_arr, 
+def store_intervals_data(intervals, interval_type, inflation_data,
+                         contribution_interval, contribution_arr, contribution_inflation_arr, contribution_start_arr, contribution_end_arr, 
+                         withdrawal_interval, withdrawal_arr, withdrawal_inflation_arr, withdrawal_start_arr, withdrawal_end_arr, 
                          contribution_invalid, contribution_start_invalid, contribution_end_invalid,
                          withdrawal_invalid, withdrawal_start_invalid, withdrawal_end_invalid):
     
@@ -624,12 +707,30 @@ def store_intervals_data(intervals, interval_type,
         if interval_type == "y":
             contribution_difference_start = math.ceil(contribution_start.year - start_date.year)
             contribution_difference_end = math.ceil(contribution_end.year - start_date.year)
+            
+            # adjust monthly contribution to yearly
+            if contribution_interval[contribution] == "m":
+                contribution_arr[contribution] *= 12
+
         elif interval_type == "m":
             contribution_difference_start = math.ceil((contribution_start.year - start_date.year) * 12 + contribution_start.month - start_date.month)
             contribution_difference_end = math.ceil((contribution_end.year - start_date.year) * 12 + contribution_end.month - start_date.month)
+
+        starting_contribution = contribution_arr[contribution]
         for interval in range(len(cw_array)): 
             if contribution_difference_start <= interval <= contribution_difference_end:
-                cw_array[interval] += contribution_arr[contribution]
+
+                #inflation adjustment
+                contribution_arr[contribution] = starting_contribution
+                if contribution_inflation_arr[contribution]:
+                    contribution_arr[contribution] *= inflation_data[interval]
+
+                # if yearly and simulation monthly, only contribute every 12 months
+                if contribution_interval[contribution] == "y" and interval_type == "m":
+                    if interval%12 == 0:
+                        cw_array[interval] += contribution_arr[contribution]
+                else:
+                    cw_array[interval] += contribution_arr[contribution]
 
     for withdrawal in range(len(withdrawal_arr)):
 
@@ -640,13 +741,30 @@ def store_intervals_data(intervals, interval_type,
         if interval_type == "y":
             withdrawal_difference_start = math.ceil(withdrawal_start.year - start_date.year)
             withdrawal_difference_end = math.ceil(withdrawal_end.year - start_date.year)
+            
+            # adjust monthly withdrawals to yearly
+            if withdrawal_interval[withdrawal] == "m":
+                withdrawal_arr[withdrawal] *= 12
+
         elif interval_type == "m":
             withdrawal_difference_start = math.ceil((withdrawal_start.year - start_date.year) * 12 + withdrawal_start.month - start_date.month)
             withdrawal_difference_end = math.ceil((withdrawal_end.year - start_date.year) * 12 + withdrawal_end.month - start_date.month)
 
+        starting_withdrawal = withdrawal_arr[withdrawal]
         for interval in range(len(cw_array)):
             if withdrawal_difference_start <= interval <= withdrawal_difference_end:
-                cw_array[interval] -= withdrawal_arr[withdrawal]
+                
+                #inflation adjustment
+                withdrawal_arr[withdrawal] = starting_withdrawal
+                if withdrawal_inflation_arr[withdrawal]:
+                    withdrawal_arr[withdrawal] *= (inflation_data[interval])
+
+                # if yearly and simulation monthly, only withdraw every 12 months
+                if withdrawal_interval[withdrawal] == "y" and interval_type == "m":
+                    if interval%12 == 0:
+                        cw_array[interval] -= withdrawal_arr[withdrawal]
+                else:
+                    cw_array[interval] -= withdrawal_arr[withdrawal]
 
     return [cw_array]
 
@@ -724,7 +842,7 @@ def update_time_period_validity(max_value, value, pattern):
     [Input({'type':'monte-carlo-delete', 'index':ALL}, 'n_clicks'),
      Input('monte-carlo-add-c', 'n_clicks'),
      Input('monte-carlo-add-w', 'n_clicks'),
-     Input('monte-carlo-time-periods', 'value'),],
+     Input('monte-carlo-time-periods', 'value')],
     State('monte-carlo-cw-container', 'children')
 )
 def update_cw_container(c_delete_click, nc, nw, time_periods, children):
@@ -748,9 +866,9 @@ def update_cw_container(c_delete_click, nc, nw, time_periods, children):
     # add buttons
     else:
         if 'monte-carlo-add-c' == ctx.triggered_id:
-            inputgroup = cw.create_cw_source(num_children, time_periods, "Contribution")   
+            inputgroup = cw.create_cw_source(num_children, "Contribution", time_periods)   
         elif 'monte-carlo-add-w' == ctx.triggered_id:
-            inputgroup = cw.create_cw_source(num_children, time_periods, "Withdrawal")
+            inputgroup = cw.create_cw_source(num_children, "Withdrawal", time_periods)
         children += [inputgroup]
 
     return children
@@ -792,6 +910,28 @@ def update_time_period_validity(value, pattern):
         return True
     else:
         return False
+    
+# Inflation rate data
+@callback(
+    Output('monte-carlo-inflation-data', 'data'),
+    [Input('monte-carlo-inflation', 'value'),
+     Input('monte-carlo-inflation-interval', 'value'),
+     Input('monte-carlo-time-interval', 'value'),
+     Input('monte-carlo-intervals-data', 'data')]
+)
+def store_inflation_data(inflation_rate, inflation_interval_type, interval_type, intervals_data):
+
+    inflation_rate /= 100
+
+    if inflation_interval_type == interval_type:
+        inflation_data = u.cumulative_inflation_array(inflation_rate, intervals_data)
+    elif inflation_interval_type == "y" and interval_type == "m":
+        inflation_data = u.cumulative_inflation_array(inflation_rate/12, intervals_data)
+    elif inflation_interval_type == "m" and interval_type == "y":
+        inflation_data = u.cumulative_inflation_array(inflation_rate*12, intervals_data)
+
+    return inflation_data
+
 
 # Paragraph explaining the results of the graph
 @callback(

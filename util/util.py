@@ -407,3 +407,13 @@ def any_none(arr):
         if i is None:
             return True
     return False
+
+def cumulative_inflation_array(inflation_rate, length):
+
+    inflation_data = [] * length
+    inflation = 1
+    for interval in range(length):
+        inflation *= (1 + inflation_rate)
+        inflation_data.append(inflation)
+    
+    return inflation_data

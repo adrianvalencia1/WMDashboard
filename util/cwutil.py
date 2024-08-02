@@ -4,6 +4,7 @@ from dash import dcc, html
 from dateutil.relativedelta import relativedelta
 
 START_DATE = datetime.today().strftime('%m/%Y')
+RUN_UNTIL_DATE = (datetime.today() + relativedelta(years=10)).strftime('%m/%Y')
 
 def create_asset_source(arstd_id, dropdown_menu_items):
 
@@ -56,13 +57,22 @@ def create_asset_source(arstd_id, dropdown_menu_items):
 
     return inputgroup
 
-def create_cw_source(cw_id, max_interval, cw_type):
+def create_cw_source(cw_id, cw_type, end_date=RUN_UNTIL_DATE):
     inputgroup = html.Div(
         id={'type':'monte-carlo-row', 'index':cw_id}, 
         children=[
             dbc.InputGroup(
                 id={'type':'monte-carlo-' + cw_type.lower() + '-igcontainer', 'index':cw_id},
                 children=[
+                    dbc.Select(
+                        id={'type':'monte-carlo-' + cw_type.lower() + '-interval', 'index': cw_id},
+                        options=[
+                            {"label":"Monthly", "value":"m"},
+                            {"label":"Yearly", "value":"y"},
+                            {"label":"Lump Sum", "value":"l"},
+                        ],
+                        value="m"
+                    ),
                     dbc.InputGroupText(cw_type),
                     dbc.InputGroupText("$"), 
                     dbc.Input(
@@ -72,7 +82,14 @@ def create_cw_source(cw_id, max_interval, cw_type):
                         type='number',
                         placeholder=cw_type.lower(),
                     ),
-
+                    dbc.InputGroupText(
+                        dbc.Switch(
+                            id={'type':'monte-carlo-' + cw_type.lower() + '-inflation', 'index': cw_id},
+                            label="Adjust for inflation",
+                            value=False,
+                            style={"height":"2vh"}                                                       
+                        )
+                    ),
                     dbc.InputGroupText("Start"), 
                     dbc.Input(
                         id={'type':'monte-carlo-' + cw_type.lower() + '-start', 'index':cw_id},
@@ -85,7 +102,7 @@ def create_cw_source(cw_id, max_interval, cw_type):
                     dbc.InputGroupText("End"), 
                     dbc.Input(
                         id={'type':'monte-carlo-' + cw_type.lower() + '-end', 'index':cw_id},
-                        value=START_DATE,
+                        value=end_date,
                         type='text',
                         placeholder="End Interval",
                         pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
