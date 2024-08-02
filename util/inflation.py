@@ -42,3 +42,4 @@ def calculate_inflation(df, initial_amount):
 def append_inflation(inf_df, datasets):
     for key, df in datasets.items():
         df = df.join(inf_df['Inflation Rate'])
+        

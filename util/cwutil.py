@@ -90,6 +90,8 @@ def create_cw_source(cw_id, max_interval, cw_type):
                         placeholder="End Interval",
                         pattern=r"(?<![0-9/])(0?[1-9]|1[0-2])/(\d{4})\b"
                     ),
+                    dbc.InputGroupText("Notes", id='monte-carlo-notes'), 
+                    dbc.Textarea(rows=1)
                 ]
             ),
             dbc.Button(
